@@ -178,7 +178,7 @@ async function espnPoll(){if(document.hidden||!S.live||!PL||!S.byNfl)return;cons
   LV.err=0;LV.eok=Date.now();drawFeed()}catch(e){LV.err++;drawFeed()}}
 function startEspn(){clearInterval(LV.espn);if(!S.live)return;espnPoll();LV.espn=setInterval(espnPoll,30000)}
 function drawFeed(){const el=$("#feed");if(!el)return;
- if(!el.firstChild){el.innerHTML='<div class="fh"><h2><span class="pulse" id="fp"></span>Live feed</h2><p id="fs"></p><div class="years" id="ff" style="margin-top:10px"><button type="button" data-f="game">Game feed</button><button type="button" data-f="moves">Roster moves</button></div></div><div id="fl"></div>';
+ if(!el.firstChild){el.innerHTML='<div class="fh"><h2><span class="pulse" id="fp"></span>Game Week Feed</h2><p id="fs"></p><div class="years" id="ff" style="margin-top:10px"><button type="button" data-f="game">Game feed</button><button type="button" data-f="moves">Roster moves</button></div></div><div id="fl"></div>';
   el.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{LV.filter=b.dataset.f;drawFeed()})}
  el.querySelectorAll("[data-f]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.f==LV.filter));
  $("#fp").className="pulse"+(S.live?"":" off");
