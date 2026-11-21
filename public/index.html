@@ -107,7 +107,13 @@ nav{scrollbar-width:none;-webkit-overflow-scrolling:touch}nav::-webkit-scrollbar
 .cf{position:absolute;top:-10px;width:7px;height:12px;border-radius:2px;animation:cf 2.4s ease-in forwards}@keyframes cf{to{transform:translate(var(--dx),260px) rotate(540deg);opacity:0}}
 .or{display:grid;grid-template-columns:minmax(0,1.5fr) 1fr 56px;gap:12px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}.or:last-child{border:0}.or>b{text-align:right}
 @media (prefers-reduced-motion:reduce){.res.champ,.res.loser,.res .big,.bt.in,.cf{animation:none!important}}
-@media (max-width:800px){.bk{grid-template-columns:minmax(0,1fr)}.or{grid-template-columns:minmax(0,1fr) 70px 52px}.res{min-height:120px}}
+@media (max-width:800px){.bk{grid-template-columns:minmax(0,1fr)!important}.or{grid-template-columns:minmax(0,1fr) 70px 52px}.res{min-height:120px}}
+.recap{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:26px}
+.rcard{display:flex;gap:16px;align-items:center;border-radius:14px;padding:18px 20px;background:linear-gradient(135deg,#17306c,#0f1c3d);border:1px solid var(--line);min-width:0}
+.rcard.champ{border-color:var(--flag);box-shadow:0 0 32px #2de2e633}.rcard.loser{border-color:#ff9db0}
+.rcard .big{font-size:52px;line-height:1}.rcard .lab{font:700 12px Barlow;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin-bottom:6px}
+.rcard .lab+.who .av{width:44px;height:44px;font-size:18px}.rcard .lab+.who .wt b{font-size:20px}.rcard .sub{margin-top:8px;font-size:13px;color:var(--mute);line-height:1.8}.rcard .sub .who{vertical-align:middle}.rcard .sub b{color:var(--ink)}
+@media (max-width:700px){.recap{grid-template-columns:minmax(0,1fr)}.rcard{padding:14px}.rcard .big{font-size:42px}}
 .who{display:inline-flex;align-items:center;gap:9px;vertical-align:middle;min-width:0;text-align:left}
 .av{width:32px;height:32px;border-radius:50%;object-fit:cover;flex:none;background:#21418a;display:inline-grid;place-items:center;font:700 15px "Barlow Condensed";color:#cfe6ff;box-shadow:0 0 0 1.5px #ffffff26}
 .wt{display:flex;flex-direction:column;line-height:1.2;min-width:0}.wt b{font-weight:600}.wt small{color:var(--mute);font-size:12px;font-weight:400}
@@ -131,6 +137,19 @@ nav{scrollbar-width:none;-webkit-overflow-scrolling:touch}nav::-webkit-scrollbar
 @media (max-width:700px){.dr{grid-template-columns:minmax(0,1fr);min-width:0;gap:4px;padding:10px 0}.dr>div:empty{display:none}.dt{margin:0 46px}}
 @media (max-width:520px){.snap{display:flex!important;overflow-x:auto;gap:10px;scroll-snap-type:x mandatory;scroll-padding:0 12px;margin:0 -12px 22px;padding:0 12px 4px}.snap .card{flex:0 0 78%;scroll-snap-align:start;margin:0}.av{width:28px;height:28px}.logo{width:56px;height:56px}}
 .note{color:var(--mute);font-size:13px;margin:0 0 12px}
+
+/* readability pass */
+h1,h2,h3,h4,.sh,.sub,.lab,.kick{text-wrap:balance}p,.note,.msg,.es{text-wrap:pretty}
+.nw,.num,.sc,.d,.rs,.pl span,.chip,.pill,.years button,.tab,.bt .sd{white-space:nowrap}
+.ln{display:flex;flex-wrap:wrap;align-items:center;gap:2px 7px}
+.et{flex-wrap:wrap;row-gap:2px}.et b{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}.et b.nw{white-space:nowrap}
+.wt b,.wt small,.cn b{overflow-wrap:anywhere}.who.sm .wt{flex-wrap:wrap;column-gap:5px}
+.row{flex-wrap:wrap;align-items:center;row-gap:2px}.row>span:last-child{margin-left:auto;text-align:right}
+.cp{border-radius:12px;align-items:flex-start;padding:4px 12px 4px 4px;max-width:100%}.cp .cn{display:flex;flex-direction:column;gap:1px;min-width:0;line-height:1.25}.cp .cn b{font-weight:600}
+.mv{padding:10px 0;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:5px}.mv:last-child{border:0}
+.rs{font:700 28px "Barlow Condensed";color:var(--ink);margin-top:6px;letter-spacing:.01em}.rcard .sub{line-height:1.5}
+.ev .es{line-height:1.45}.ev .es+.es{margin-top:2px}
+.stat p{line-height:1.45;text-wrap:pretty}
 </style>
 </head>
 <body>
@@ -188,7 +207,7 @@ async function poll(){if(document.hidden||!S.live)return;const L=S.L;
  try{const st=await get("/state/nfl");S.state=st;const w=st.week;
   const[m,tx]=await Promise.all([get(`/league/${L.league_id}/matchups/${w}`),get(`/league/${L.league_id}/transactions/${w}`).catch(()=>[])]);if(S.L!==L)return;
   if(LV.week!==w){LV.prev={};LV.lead={};LV.ready=false;LV.week=w}
-  const now=Date.now(),g={},tot={};m.forEach(x=>{(g[x.matchup_id]??=[]).push(x);tot[x.roster_id]=x.points||0});
+  if(S.wk[w-1])S.wk[w-1]=m;const now=Date.now(),g={},tot={};m.forEach(x=>{(g[x.matchup_id]??=[]).push(x);tot[x.roster_id]=x.points||0});
   const opp={};Object.values(g).forEach(p=>{if(p.length==2){opp[p[0].roster_id]=p[1].roster_id;opp[p[1].roster_id]=p[0].roster_id}});
   m.forEach(x=>{if(!S.by[x.roster_id])return;const pp=x.players_points||{},sx=new Set(x.starters||[]);
    for(const id in pp){const k=x.roster_id+":"+id,old=LV.prev[k];if(LV.ready&&old!=null&&sx.has(id)&&Math.abs(pp[id]-old)>=.01)push({type:"pts",id,team:x.roster_id,d:pp[id]-old,ts:tot[x.roster_id],os:tot[opp[x.roster_id]],opp:opp[x.roster_id],t:now});LV.prev[k]=pp[id]}});
@@ -196,12 +215,12 @@ async function poll(){if(document.hidden||!S.live)return;const L=S.L;
    if(LV.ready&&ld&&old&&old!==ld)push({type:"lead",team:ld,opp:ld==a.roster_id?b.roster_id:a.roster_id,ts:Math.max(a.points,b.points),os:Math.min(a.points,b.points),t:now});LV.lead[key]=ld});
   const done=tx.filter(x=>x.status=="complete").sort((a,b)=>b.created-a.created);
   done.forEach((x,i)=>{if(LV.seen.has(x.transaction_id))return;LV.seen.add(x.transaction_id);if(LV.ready||i<5)push({type:"tx",x,t:x.created})});
-  LV.ready=true;LV.updated=now;drawFeed()}catch(e){}}
+  LV.ready=true;LV.updated=now;drawFeed();refreshPredictions()}catch(e){}}
 function evHtml(e){if(e.type=="play")return playHtml(e);const fresh=Date.now()-e.t<4000&&e.type!="tx"?" fresh":"";
- if(e.type=="pts")return`<div class="ev${fresh}">${photo(e.id)}<div class="eb"><div class="et"><b>${PL?esc(pn(e.id)):"Player"}</b><span class="d ${e.d>0?"pos":"neg"}">${SIGN(e.d)}</span></div><div class="es">${pinfo(e.id)} · ${ago(e.t)}</div><div class="es">for <b>${tname(e.team)}</b>, ${f1(e.ts)}–${f1(e.os)} vs ${tname(e.opp)}</div></div></div>`;
- if(e.type=="lead")return`<div class="ev${fresh}"><div class="ph">▲</div><div class="eb"><div class="et"><b>${tname(e.team)}</b></div><div class="es">takes the lead over <b>${tname(e.opp)}</b>, ${f1(e.ts)}–${f1(e.os)} · ${ago(e.t)}</div></div></div>`;
+ if(e.type=="pts")return`<div class="ev${fresh}">${photo(e.id)}<div class="eb"><div class="et"><b>${PL?esc(pn(e.id)):"Player"}</b><span class="d ${e.d>0?"pos":"neg"}">${SIGN(e.d)}</span></div><div class="es">${pinfo(e.id)} · ${ago(e.t)}</div><div class="es ln"><span>for</span>${tname(e.team)}</div><div class="es ln"><span class="nw">${f1(e.ts)}–${f1(e.os)}</span><span>vs</span>${tname(e.opp)}</div></div></div>`;
+ if(e.type=="lead")return`<div class="ev${fresh}"><div class="ph">▲</div><div class="eb"><div class="et">${tname(e.team)}<span class="es nw">${ago(e.t)}</span></div><div class="es ln"><span>takes the lead over</span>${tname(e.opp)}</div><div class="es"><span class="nw">${f1(e.ts)}–${f1(e.os)}</span></div></div></div>`;
  const x=e.x,a=Object.entries(x.adds||{}),d=Object.entries(x.drops||{}),lbl=x.type=="trade"?"Trade":x.type=="waiver"?"Waiver":"Free agent";
- return`<div class="ev"><div class="ph">⇄</div><div class="eb"><div class="et"><b>${lbl}</b><span class="es">${ago(e.t)}</span></div>${a.map(([p,r])=>`<div class="es"><span class="pos">+</span> <b>${PL?esc(pn(p)):"Player"}</b> to ${tname(r)}</div>`).join("")}${d.map(([p,r])=>`<div class="es"><span class="neg">−</span> ${PL?esc(pn(p)):"Player"} from ${tname(r)}</div>`).join("")}</div></div>`}
+ return`<div class="ev"><div class="ph">⇄</div><div class="eb"><div class="et"><b>${lbl}</b><span class="es">${ago(e.t)}</span></div>${a.map(([p,r])=>`<div class="es ln"><span class="pos">+</span> <b>${PL?esc(pn(p)):"Player"}</b> to ${tname(r)}</div>`).join("")}${d.map(([p,r])=>`<div class="es ln"><span class="neg">−</span> ${PL?esc(pn(p)):"Player"} from ${tname(r)}</div>`).join("")}</div></div>`}
 const ESP="https://site.api.espn.com/apis/site/v2/sports/football/nfl",sab=a=>a=="WSH"?"WAS":a;
 const logo=a=>`https://sleepercdn.com/images/team_logos/nfl/${String(a).toLowerCase()}.png`;
 function buildIdx(){S.byNfl={};S.T.forEach(t=>(t.roster.players||[]).forEach(id=>{const p=PL[id];if(!p||!p.team)return;const e={id,team:t.id,pos:p.position};
@@ -211,7 +230,7 @@ function matchPlay(g,p,dr){const text=p.text||p.shortText||"";if(!text)return nu
  [g.h,g.a].forEach(tm=>(S.byNfl[tm]||[]).forEach(e=>{if(e.def){if(tm!==off&&/intercept|fumble|sacked|safety/i.test(text))chips.push(e)}else if(e.re.test(text))chips.push(e)}));
  if(!chips.length)return null;
  return{type:"play",g,off,text,chips,dd:(p.start&&(p.start.downDistanceText||p.start.possessionText))||"",q:p.period&&p.period.number,clk:p.clock&&p.clock.displayValue,as:p.awayScore,hs:p.homeScore,seq:+p.sequenceNumber||0,t:p.wallclock?Date.parse(p.wallclock):g.date}}
-function playHtml(e){const g=e.g;return`<div class="ev"><img class="ph" src="${logo(e.off)}" alt="" onerror="this.style.opacity=0"><div class="eb"><div class="et"><b>${g.a} ${e.as??""}–${e.hs??""} ${g.h}</b><span class="es">${e.q?"Q"+e.q+" ":""}${esc(e.clk||"")} · ${ago(e.t)}</span></div>${e.dd?`<div class="es">${esc(e.dd)}</div>`:""}<div style="font-weight:600;margin:2px 0">${esc(e.text)}</div>${e.chips.map(c=>`<span class="cp">${photo(c.id).replace('class="ph"','')}<span>${esc(pn(c.id))} <small>${tname(c.team)}</small></span></span>`).join("")}</div></div>`}
+function playHtml(e){const g=e.g;return`<div class="ev"><img class="ph" src="${logo(e.off)}" alt="" onerror="this.style.opacity=0"><div class="eb"><div class="et"><b class="nw">${g.a} ${e.as??""}–${e.hs??""} ${g.h}</b><span class="es">${e.q?"Q"+e.q+" ":""}${esc(e.clk||"")} · ${ago(e.t)}</span></div>${e.dd?`<div class="es">${esc(e.dd)}</div>`:""}<div style="font-weight:600;margin:2px 0">${esc(e.text)}</div>${e.chips.map(c=>`<span class="cp">${photo(c.id).replace('class="ph"','')}<span class="cn"><b>${esc(pn(c.id))}</b>${tname(c.team)}</span></span>`).join("")}</div></div>`}
 async function espnPoll(){if(document.hidden||!S.live||!PL||!S.byNfl)return;const L=S.L;
  try{const sb=await(await fetch(ESP+"/scoreboard")).json();
   const ev=(sb.events||[]).map(e=>{const c=e.competitions[0],h=c.competitors.find(x=>x.homeAway=="home"),a=c.competitors.find(x=>x.homeAway=="away");return{id:e.id,date:Date.parse(e.date),state:e.status.type.state,h:sab(h.team.abbreviation),a:sab(a.team.abbreviation)}}).filter(g=>S.byNfl[g.h]||S.byNfl[g.a]);
@@ -235,19 +254,22 @@ function drawFeed(){const el=$("#feed");if(!el)return;
 function sec(id,t,b,k){return`<section id="${id}">${k?`<div class="kick">${k}</div>`:""}<h2 class="sh">${t}</h2>${b}</section>`}
 function drawSnapshot(){const el=$("#sn");if(!el)return;const T=S.T,hasR=S.played.length>0;
  const card=(h,body,p)=>`<div class="card stat"><h3>${h}</h3><div class="sv">${body}</div><p>${p}</p></div>`;
- let o=card("Right now",`<span class="num" style="font-size:32px;font-weight:700">${S.live?"Week "+S.state.week:esc(S.L.season)}</span>`,esc(S.L.name)+" · "+T.length+" teams");
+ let o=card(S.L.status==="complete"?"Season":"Right now",`<span class="num" style="font-size:32px;font-weight:700">${S.live?"Week "+S.state.week:esc(S.L.season)}</span>`,esc(S.L.name)+" · "+T.length+" teams");
  if(hasR){computePower();const rec=t=>`${t.w}-${t.l}${t.t?"-"+t.t:""}`,lead=[...T].sort((a,b)=>(b.w+b.t/2)-(a.w+a.t/2)||b.pf-a.pf)[0],top=[...T].sort((a,b)=>b.power-a.power)[0],hi=[...T].sort((a,b)=>b.pf-a.pf)[0];
   o+=card("League leader",nm(lead),rec(lead)+" record")+card("Top power ranking",nm(top),"Best mix of form and roster")+card("Most points scored",nm(hi),f1(hi.pf)+" total")}
  el.innerHTML=`<div class="grid snap">${o}</div>`}
 async function renderPage(){const L0=S.L;
- app.innerHTML='<div id="sn"></div>'+sec("matchups","Matchups",'<div id="mu"></div>',"This week")+sec("standings","Standings",standings(),"League race")+sec("power","Power rankings",'<div id="pw"></div>',"League race")+sec("outlook","Playoff outlook",'<div id="ol"><div class="msg">Running 20,000 season simulations…</div></div>',"League race")+sec("brackets","Playoff &amp; Poo Bowl brackets",'<div id="br"><div class="msg">Loading…</div></div>',"League race")+sec("insights","Insights",insights(),"Deep dive")+sec("rosters","Rosters",'<div id="ro"><div class="msg">Loading players…</div></div>',"Teams")+sec("moves","League moves",'<div id="mv"><div class="msg">Loading…</div></div>',"Teams");
+ const done=S.L.status==="complete";if(done&&S.played.length)S.cur=S.played[S.played.length-1];
+ app.innerHTML='<div id="rc"></div><div id="sn"></div>'+sec("matchups","Matchups",'<div id="mu"></div>',done?"Week by week":"This week")+sec("standings","Standings",standings(),"League race")+sec("power","Power rankings",'<div id="pw"></div>',"League race")+(done?"":sec("outlook","Playoff outlook",'<div id="ol"><div class="msg">Running 20,000 season simulations…</div></div>',"League race"))+sec("brackets",done?"Playoff &amp; Poo Bowl results":"Playoff &amp; Poo Bowl brackets",'<div id="br"><div class="msg">Loading…</div></div>',done?"Final results":"League race")+sec("insights","Insights",insights(),"Deep dive")+sec("rosters","Rosters",'<div id="ro"><div class="msg">Loading players…</div></div>',"Teams")+sec("moves","League moves",'<div id="mv"><div class="msg">Loading…</div></div>',"Teams");
+ {const lk=$('a[href="#outlook"]');if(lk)lk.style.display=done?"none":""}
+ if(done)loadActual();
  startLive();drawSnapshot();drawPower();drawMatchups();loadDraft().then(drawPower);
  try{await players();drawRosters();drawPower();drawSnapshot();if(S.L===L0){buildIdx();startEspn()}drawFeed()}catch(e){$("#ro").innerHTML='<div class="msg">Couldn’t load players: '+esc(e.message)+"</div>"}
- setTimeout(()=>{drawOutlook();drawBracket()},0);drawMoves()}
+ if(!done)setTimeout(()=>{drawOutlook();drawBracket()},0);drawMoves()}
 function drawMatchups(){$("#mu").innerHTML=matchups();const w=$("#wsel");if(w)w.onchange=()=>{S.cur=+w.value;drawMatchups();drawMoves()}}
 function drawRosters(){$("#ro").innerHTML=rosters();$("#rsel").onchange=e=>{S.rsel=+e.target.value;drawRosters()}}
 async function drawMoves(){const el=$("#mv"),wk=S.cur;if(!el)return;try{const tx=(await get(`/league/${S.L.league_id}/transactions/${wk}`)).filter(x=>x.status=="complete");
- el.innerHTML=`<div class="card"><p class="note">Week ${wk}</p>`+(tx.map(x=>{const a=Object.entries(x.adds||{}),d=Object.entries(x.drops||{});return`<div class="row"><span><span class="pill">${esc(x.type.replace("_"," "))}</span>${a.map(([p,r])=>`<span class="pos">+ ${esc(pn(p))}</span> to ${tname(r)}`).join("; ")} ${d.map(([p])=>`<span class="neg">− ${esc(pn(p))}</span>`).join(" ")}</span><span>${new Date(x.created).toLocaleDateString()}</span></div>`}).join("")||'<div class="msg">No completed moves this week.</div>')+"</div>"}catch(e){el.innerHTML='<div class="msg">'+esc(e.message)+"</div>"}}
+ el.innerHTML=`<div class="card"><p class="note">Week ${wk}</p>`+(tx.map(x=>{const a=Object.entries(x.adds||{}),d=Object.entries(x.drops||{});return`<div class="mv"><div class="ln"><span class="pill">${esc(x.type.replace("_"," "))}</span><span class="es nw">${new Date(x.created).toLocaleDateString()}</span></div>${a.map(([p,r])=>`<div class="ln"><span class="pos nw">+ ${esc(pn(p))}</span><span class="es">to</span>${tname(r)}</div>`).join("")}${d.map(([p])=>`<div class="ln"><span class="neg nw">− ${esc(pn(p))}</span></div>`).join("")}</div>`}).join("")||'<div class="msg">No completed moves this week.</div>')+"</div>"}catch(e){el.innerHTML='<div class="msg">'+esc(e.message)+"</div>"}}
 
 const DEFAULT_LEAGUE="1375130186369994752";
 (async()=>{busy("Loading the NFLDO league…");
@@ -288,10 +310,10 @@ function simulate(){const T=S.T,n=T.length,L=S.L,rem=[];
  for(let w=1;w<=S.wk.length;w++){if(S.played.includes(w))continue;const g={};(S.wk[w-1]||[]).forEach(x=>{if(x.matchup_id!=null)(g[x.matchup_id]??=[]).push(x.roster_id)});const pairs=Object.values(g).filter(p=>p.length==2);if(pairs.length)rem.push({w,pairs})}
  if(!rem.length)return null;
  const ix={};T.forEach((t,i)=>ix[t.id]=i);const lg=avg(T.map(t=>t.rs)),la=PL?avg(T.map(t=>t.lineup||0)):0,sdl=avg(T.filter(t=>t.sc.length>1).map(t=>t.sd))||20;
- const mean=T.map(t=>la?.5*t.rs+.5*t.lineup*lg/la:t.rs),sdv=T.map(t=>Math.sqrt((4*sdl*sdl+t.sc.length*t.sd*t.sd)/(4+t.sc.length)));
+ teamModel();const mean=T.map(t=>t.mu),sdv=T.map(t=>t.sg);
  const bw=T.map(t=>t.w+t.t/2),bp=T.map(t=>t.pf),P=Math.min(n,L.settings.playoff_teams||6),N=20000;
  const mk=Array(n).fill(0),ws=Array(n).fill(0),cw=Array(n).fill(0),cl=Array(n).fill(0),mw=Array(n).fill(0),ml=Array(n).fill(0);
- const rnd=()=>{let u=0;while(!u)u=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*Math.random())};
+ seedRng(hash(stateKey()+"o"));const rnd=gauss;
  for(let s=0;s<N;s++){const w=bw.slice(),p=bp.slice(),res=Array(n).fill(-1);
   rem.forEach((r,k)=>{const sc=mean.map((m,i)=>Math.max(0,m+sdv[i]*rnd()));r.pairs.forEach(([a,b])=>{const i=ix[a],j=ix[b];if(i==null||j==null)return;p[i]+=sc[i];p[j]+=sc[j];const iw=sc[i]>sc[j];w[iw?i:j]++;if(k==0){res[iw?i:j]=1;res[iw?j:i]=0}})});
   const inn=new Set([...Array(n).keys()].sort((a,b)=>w[b]-w[a]||p[b]-p[a]).slice(0,P));
@@ -311,26 +333,37 @@ function drawOutlook(){const el=$("#ol");if(!el)return;
  <div class="card scroll"><h3 style="margin:0 0 2px;font-size:24px">Impact of week ${o.w1} on playoff chances</h3><p class="note">Record through ${S.played.length} weeks</p><div class="lg2"><span><i style="background:var(--flag)"></i>With week ${o.w1} win</span><span><i style="background:#3b7bff"></i>With week ${o.w1} loss</span></div>${B.map(row).join("")}<div class="dr"><div></div><div class="dt">${[0,25,50,75,100].map(v=>`<span class="ax" style="left:${v}%">${v}</span>`).join("")}</div></div><p class="note" style="margin:14px 0 0">Playoff probability (%). Each team’s score is simulated around a blend of recent form and current lineup strength, with seeding by wins, then points. Division winners and other tiebreakers aren’t modeled, so treat close calls as estimates.</p></div>`}
 
 const BR={busy:false},RM=!!(window.matchMedia&&matchMedia("(prefers-reduced-motion:reduce)").matches);
-const gauss=()=>{let u=0;while(!u)u=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*Math.random())};
+let RNG=Math.random;
+const hash=t=>{let h=2166136261;for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0};
+function seedRng(a){RNG=()=>{a=(a+0x6D2B79F5)>>>0;let t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
+const gauss=()=>{let u=0;while(!u)u=RNG();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*RNG())};
+function stateKey(){const w=S.live&&S.state?S.state.week:0,lw=(w&&S.wk[w-1])||[],cur={};lw.forEach(x=>cur[x.roster_id]=x.points||0);
+ return S.T.map(t=>[t.id,t.w,t.l,t.t,Math.round(t.pf*10),Math.round((t.rs||0)*10),Math.round((t.lineup||0)*10),Math.round((cur[t.id]||0)*10)].join(":")).join("|")+"#"+S.played.length}
 function teamModel(){computePower();const T=S.T,lg=avg(T.map(t=>t.rs)),la=PL?avg(T.map(t=>t.lineup||0)):0,sdl=avg(T.filter(t=>t.sc.length>1).map(t=>t.sd))||20;
- T.forEach(t=>{t.mu=la?.5*t.rs+.5*t.lineup*lg/la:t.rs;t.sg=Math.sqrt((4*sdl*sdl+t.sc.length*t.sd*t.sd)/(4+t.sc.length))})}
+ const wn=S.live&&S.state?S.state.week:0,lw=wn&&!S.played.includes(wn)?(S.wk[wn-1]||[]):[];
+ T.forEach(t=>{let mu=la?.5*t.rs+.5*t.lineup*lg/la:t.rs;const x=lw.find(y=>y.roster_id==t.id);
+  if(x&&x.points>0){const st=x.starters||[],pp=x.players_points||{},pend=st.length?st.filter(id=>!(pp[id]>0)).length/st.length:0;mu=.75*mu+.25*(x.points+mu*pend)}
+  t.mu=mu;t.sg=Math.sqrt((4*sdl*sdl+t.sc.length*t.sd*t.sd)/(4+t.sc.length))})}
 function bGame(a,b){const x=Math.max(0,a.mu+a.sg*gauss()),y=Math.max(0,b.mu+b.sg*gauss());return x>=y?{a,b,sa:x,sb:y,w:a,l:b}:{a,b,sa:x,sb:y,w:b,l:a}}
 function playBracket(top,low){const g1=bGame(top[0],top[3]),g2=bGame(top[1],top[2]),fin=bGame(g1.w,g2.w),p1=bGame(low[0],low[3]),p2=bGame(low[1],low[2]),pf=bGame(p1.l,p2.l);return{g1,g2,fin,p1,p2,pf,champ:fin.w,loser:pf.l}}
+function bPick(a,b){const w=a.mu>=b.mu?a:b;return{a,b,sa:a.mu,sb:b.mu,w,l:w===a?b:a}}
+function predictBracket(top,low){const g1=bPick(top[0],top[3]),g2=bPick(top[1],top[2]),fin=bPick(g1.w,g2.w),p1=bPick(low[0],low[3]),p2=bPick(low[1],low[2]),pf=bPick(p1.l,p2.l);return{g1,g2,fin,p1,p2,pf,champ:fin.w,loser:pf.l}}
 const wp=(a,b)=>cdf((a.mu-b.mu)/(Math.sqrt(a.sg*a.sg+b.sg*b.sg)||1));
 const bRow=(t,p)=>`<div class="bt"><span class="sd">${t.seed}</span>${nm(t)}<span class="sc">${p==null?"":Math.round(p*100)+"%"}</span></div>`;
 const bPh=x=>`<div class="bt tbd"><span class="sd"></span><span class="wt"><small>${x}</small></span><span class="sc"></span></div>`;
 const bCard=(id,t,a,b)=>`<div class="bg" id="${id}"><div class="bgt">${t}</div>${a}${b}</div>`;
-function drawBracket(){if(BR.busy)return;const el=$("#br");if(!el)return;
+function drawBracket(){if(S.L.status==="complete")return drawActualBracket();if(BR.busy)return;const el=$("#br");if(!el)return;
  if(S.T.length<8||!S.played.length){el.innerHTML='<div class="msg">'+(S.T.length<8?"Brackets need at least 8 teams.":"Brackets appear once week 1 is complete.")+"</div>";return}
  teamModel();const T=[...S.T].sort((a,b)=>(b.w+b.t/2)-(a.w+a.t/2)||b.pf-a.pf);T.forEach((t,i)=>t.seed=i+1);
  const top=T.slice(0,4),low=T.slice(4,8),N=20000,ch={},lo={};T.forEach(t=>{ch[t.id]=0;lo[t.id]=0});
+ BR.key=stateKey();seedRng(hash(BR.key+"b"));
  for(let i=0;i<N;i++){const r=playBracket(top,low);ch[r.champ.id]++;lo[r.loser.id]++}
  const odds=(arr,m)=>arr.slice().sort((a,b)=>m[b.id]-m[a.id]).map(t=>`<div class="or">${nm(t)}<div class="bar"><i style="width:${m[t.id]/N*100}%"></i></div><b>${(m[t.id]/N*100).toFixed(1)}%</b></div>`).join("");
  const g=(id,t,a,b)=>bCard(id,t,bRow(a,wp(a,b)),bRow(b,wp(b,a)));
  BR.top=top;BR.low=low;
  BR.po=`<div class="bk"><div class="bc"><div class="bh">Semifinals</div>${g("g1","1 vs 4",top[0],top[3])}${g("g2","2 vs 3",top[1],top[2])}</div><div class="bc"><div class="bh">Final</div>${bCard("fin","Championship",bPh("Winner of 1 vs 4"),bPh("Winner of 2 vs 3"))}</div><div class="bc"><div class="bh">Champion</div><div class="res" id="champ"><div class="big">🏆</div><div class="lab">To be decided</div></div></div></div><h4 class="oh">Title odds</h4>${odds(top,ch)}`;
  BR.pb=`<div class="bk"><div class="bc"><div class="bh">Round 1</div>${g("p1","5 vs 8",low[0],low[3])}${g("p2","6 vs 7",low[1],low[2])}</div><div class="bc"><div class="bh">Poo Bowl final</div>${bCard("pf","Loser goes last",bPh("Loser of 5 vs 8"),bPh("Loser of 6 vs 7"))}</div><div class="bc"><div class="bh">Overall loser</div><div class="res" id="pooRes"><div class="big">🚽</div><div class="lab">To be decided</div></div></div></div><h4 class="oh">Overall loser odds</h4>${odds(low,lo)}`;
- el.innerHTML=`<div class="bctl"><button type="button" id="simBtn">▶ Simulate playoffs</button><span id="bkmsg"></span></div><p class="note">Seeds use today’s standings (wins, then points). The percentages are each team’s chance of winning that game. In the Poo Bowl the loser of each game advances, and whoever loses the final is the overall loser.</p><div class="card"><h3 class="bth">Playoffs</h3><div id="bkw1">${BR.po}</div></div><div class="card"><h3 class="bth">Poo Bowl</h3><div id="bkw2">${BR.pb}</div></div>`;
+ el.innerHTML=`<div class="bctl"><button type="button" id="simBtn">▶ Simulate playoffs</button><span id="bkmsg"></span></div><p class="note">Seeds use today’s standings (wins, then points). The simulation always plays out the most likely result using each team’s form, roster strength and this week’s live scores, so it only changes when the ladder, rosters or scores change. Scores shown are projected points, and the percentages are each team’s chance of winning that game. In the Poo Bowl the loser of each game advances, and whoever loses the final is the overall loser.</p><div class="card"><h3 class="bth">Playoffs</h3><div id="bkw1">${BR.po}</div></div><div class="card"><h3 class="bth">Poo Bowl</h3><div id="bkw2">${BR.pb}</div></div>`;
  $("#simBtn").onclick=runSim}
 const wait=ms=>new Promise(r=>setTimeout(r,RM?0:ms));
 const count=(el,to,ms)=>new Promise(res=>{if(RM){el.textContent=to.toFixed(1);return res()}const t0=performance.now();(function f(t){const k=Math.min(1,(t-t0)/ms);el.textContent=(to*(1-Math.pow(1-k,3))).toFixed(1);k<1?requestAnimationFrame(f):res()})(t0)});
@@ -340,7 +373,7 @@ const fillRow=(row,t)=>{row.className="bt in";row.innerHTML=`<span class="sd">${
 function crown(id,emoji,label,t,cls){const el=$("#"+id);el.className="res "+cls;el.innerHTML=`<div class="big">${emoji}</div><div class="lab">${label}</div>${nm(t)}`}
 function confetti(host){if(RM)return;const c=["#2de2e6","#3b7bff","#8fd0ff","#ffffff"];for(let i=0;i<32;i++){const s=document.createElement("i");s.className="cf";s.style.cssText=`left:${Math.random()*100}%;background:${c[i%4]};animation-delay:${Math.random()*.6}s;--dx:${(Math.random()-.5)*120}px`;host.appendChild(s);setTimeout(()=>s.remove(),3300)}}
 async function runSim(){if(BR.busy)return;BR.busy=true;const btn=$("#simBtn"),msg=$("#bkmsg");btn.disabled=true;btn.textContent="Simulating…";msg.textContent="";
- $("#bkw1").innerHTML=BR.po;$("#bkw2").innerHTML=BR.pb;const r=playBracket(BR.top,BR.low);
+ $("#bkw1").innerHTML=BR.po;$("#bkw2").innerHTML=BR.pb;const r=predictBracket(BR.top,BR.low);
  try{await wait(300);
   await Promise.all([revealGame("g1",r.g1),revealGame("p1",r.p1)]);
   await Promise.all([revealGame("g2",r.g2),revealGame("p2",r.p2)]);
@@ -350,8 +383,36 @@ async function runSim(){if(BR.busy)return;BR.busy=true;const btn=$("#simBtn"),ms
   crown("champ","🏆","League champion",r.champ,"champ");confetti($("#champ"));await wait(800);
   crown("pooRes","🚽","Overall loser",r.loser,"loser");
   msg.textContent=r.champ.name+" wins the league. "+r.loser.name+" finishes last."}
- finally{BR.busy=false;btn.disabled=false;btn.textContent="▶ Simulate again"}}
+ finally{BR.busy=false;btn.disabled=false;btn.textContent="▶ Replay simulation"}}
 
+function refreshPredictions(){if(BR.busy||!S.T||!S.played.length||!PL)return;teamModel();if(stateKey()===BR.key)return;drawOutlook();drawBracket()}
+const actPts=(w,id)=>{const x=((S.act&&S.act.weeks[w])||[]).find(y=>y.roster_id==id);return x?x.points:null};
+const ord=n=>n+(n==1?"st":n==2?"nd":n==3?"rd":"th");
+async function loadActual(){const L=S.L;S.act=null;
+ try{const[wb,lb]=await Promise.all([get(`/league/${L.league_id}/winners_bracket`).catch(()=>[]),get(`/league/${L.league_id}/losers_bracket`).catch(()=>[])]);
+  const ps=L.settings.playoff_week_start||15,all=[...(wb||[]),...(lb||[])],R=all.length?Math.max(...all.map(g=>g.r)):0,weeks={};
+  await Promise.all(Array.from({length:R},(_,i)=>get(`/league/${L.league_id}/matchups/${ps+i}`).then(d=>{weeks[ps+i]=d}).catch(()=>{weeks[ps+i]=[]})));
+  if(S.L!==L)return;S.act={wb:wb||[],lb:lb||[],weeks,ps}}catch(e){if(S.L!==L)return;S.act={err:1,wb:[],lb:[],weeks:{},ps:15}}
+ drawRecap();drawActualBracket()}
+function finalGame(arr){if(!arr.length)return null;const R=Math.max(...arr.map(g=>g.r)),f=arr.filter(g=>g.r==R);return f.find(g=>g.p===1)||f[0]}
+function drawRecap(){const el=$("#rc");if(!el)return;const a=S.act;if(!a||a.err){el.innerHTML="";return}
+ const fw=finalGame(a.wb),fl=finalGame(a.lb);if(!fw&&!fl){el.innerHTML="";return}
+ const sc=(g,id)=>{const p=actPts(a.ps+g.r-1,id);return p==null?"":f1(p)};
+ const card=(cls,emoji,lab,id,g,verb,other)=>S.by[id]?`<div class="rcard ${cls}"><div class="big">${emoji}</div><div><div class="lab">${lab}</div>${nm(S.by[id])}<div class="sub"><div class="ln"><span>${verb}</span>${tname(other)}</div>${sc(g,id)?`<div class="rs">${sc(g,id)} – ${sc(g,other)}</div>`:""}</div></div></div>`:"";
+ el.innerHTML=`<div class="kick">${esc(S.L.season)} season final</div><div class="recap">${fw?card("champ","🏆",esc(S.L.season)+" league champion",fw.w,fw,"Beat",fw.l):""}${fl?card("loser","🚽",esc(S.L.season)+" Poo Bowl loser",fl.l,fl,"Lost to",fl.w):""}</div>`}
+function drawActualBracket(){const el=$("#br");if(!el)return;const a=S.act;
+ if(!a){el.innerHTML='<div class="msg">Loading results…</div>';return}
+ if(a.err||(!a.wb.length&&!a.lb.length)){el.innerHTML='<div class="msg">No playoff results found for this season.</div>';return}
+ [...S.T].sort((x,y)=>(y.w+y.t/2)-(x.w+x.t/2)||y.pf-x.pf).forEach((t,i)=>t.seed=i+1);
+ const game=(g,kind)=>{const w=a.ps+g.r-1;
+  const row=id=>{const t=S.by[id];if(!t)return bPh("TBD");const p=actPts(w,id),st=g.w==null?"":g.w==id?" win":" lose";return`<div class="bt${st}"><span class="sd">${t.seed}</span>${nm(t)}<span class="sc">${p==null?"–":f1(p)}</span></div>`};
+  const title=g.p>1?ord(g.p)+" place game":g.p===1?(kind=="w"?"Championship":"Poo Bowl final"):"Round "+g.r;
+  return`<div class="bg"><div class="bgt">${title}</div>${row(g.t1)}${row(g.t2)}</div>`};
+ const bracket=(arr,kind)=>{if(!arr.length)return'<div class="msg">No games found.</div>';const R=Math.max(...arr.map(g=>g.r));
+  const cols=Array.from({length:R},(_,i)=>{const r=i+1,gs=arr.filter(g=>g.r==r).sort((x,y)=>(x.p||0)-(y.p||0)||x.m-y.m),name=r==R?(kind=="w"?"Final":"Poo Bowl final"):(kind=="w"&&R-r==1?"Semifinals":kind=="w"&&R-r==2?"Quarterfinals":"Round "+r);return`<div class="bc"><div class="bh">${name}</div>${gs.map(g=>game(g,kind)).join("")}</div>`}).join("");
+  const f=finalGame(arr),t=S.by[kind=="w"?f.w:f.l],res=t?`<div class="res ${kind=="w"?"champ":"loser"}"><div class="big">${kind=="w"?"🏆":"🚽"}</div><div class="lab">${kind=="w"?"League champion":"Overall loser"}</div>${nm(t)}</div>`:"";
+  return`<div class="bk" style="grid-template-columns:repeat(${R},1fr) .9fr">${cols}<div class="bc"><div class="bh">${kind=="w"?"Champion":"Overall loser"}</div>${res}</div></div>`};
+ el.innerHTML=`<p class="note">Actual results from this season’s playoffs. Seeds are by regular-season record, then points.</p><div class="card"><h3 class="bth">Playoffs</h3>${bracket(a.wb,"w")}</div><div class="card"><h3 class="bth">Poo Bowl</h3>${bracket(a.lb,"l")}</div>`}
 function tiers(R,key){const k=R.length>=8?3:2,g=R.slice(1).map((t,i)=>[R[i][key]-t[key],i]).sort((a,b)=>b[0]-a[0]).slice(0,k).map(x=>x[1]);let tr=1;return R.map((t,i)=>{const x=tr;if(g.includes(i))tr++;return x})}
 const mv=d=>d>0?`<span class="pos">▲${d}</span>`:d<0?`<span class="neg">▼${-d}</span>`:"–";
 function drawPower(){const el=$("#pw");if(!el)return;el.innerHTML=power();el.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{S.pmode=b.dataset.m;drawPower()})}
