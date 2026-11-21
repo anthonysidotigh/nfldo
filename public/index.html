@@ -161,6 +161,20 @@ h1,h2,h3,h4,.sh,.sub,.lab,.kick{text-wrap:balance}p,.note,.msg,.es{text-wrap:pre
 .hh{font:700 24px "Barlow Condensed";margin:6px 0 12px}.hc .ht{display:flex;gap:8px;align-items:center}.hc .ht h3{margin:0;font-size:15px;color:var(--mute);font-weight:600}.he{font-size:22px}
 .hc .hb{font:700 38px/1.05 "Barlow Condensed";margin:8px 0 6px;white-space:nowrap}.hc.g{border-color:#2de2e655}.hc.g .hb{color:var(--flag)}.hc.s{border-color:#ff9db04d}.hc.s .hb{color:var(--bad)}
 .hc .hw{margin:4px 0}.hc .hl{margin:10px 0 0;font-style:italic;line-height:1.5;color:var(--ink)}
+
+/* hero "Right now" panel */
+.hero{display:grid;grid-template-columns:minmax(260px,.8fr) 2.2fr;gap:22px;align-items:stretch;padding:24px;border-radius:18px;margin-bottom:30px;border:1px solid #2c4482;
+ background:radial-gradient(520px 220px at 0% 0%,#2de2e622,transparent 62%),radial-gradient(420px 200px at 100% 100%,#3b7bff33,transparent 60%),linear-gradient(135deg,#17306c,#0f1c3d);box-shadow:0 14px 36px #02081a80,inset 0 1px 0 #ffffff14}
+.hl2{display:flex;flex-direction:column;justify-content:center;gap:2px;min-width:0}.hl2 .kick{margin-bottom:0}
+.hbig{white-space:nowrap;font:800 clamp(46px,5.6vw,68px)/1 "Barlow Condensed";letter-spacing:.005em;color:#fff;background:linear-gradient(180deg,#ffffff 20%,#8fd0ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;padding-bottom:4px}
+.hsub{color:#a9c4f2;font-size:15px;text-wrap:balance}
+.hchips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.chip2{font:600 12px Barlow;padding:4px 11px;border-radius:999px;background:#ffffff14;border:1px solid #ffffff22;color:#cfe6ff;white-space:nowrap}
+.chip2.live{background:#2de2e620;border-color:#2de2e66e;color:var(--flag);display:inline-flex;align-items:center;gap:7px}
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.tile{background:#0a1632b3;border:1px solid #2a3f78;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0;backdrop-filter:blur(4px)}
+.tl{font:700 12px Barlow;letter-spacing:.1em;text-transform:uppercase;color:#8fa6d1}.tb{font:700 40px/1 "Barlow Condensed";color:var(--flag);margin-top:auto}.ts{font-size:12px;color:var(--mute);margin-top:-5px}
+@media (max-width:1000px){.hero{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:700px){.hero{padding:18px;gap:14px;margin-bottom:24px}.tiles{display:flex;overflow-x:auto;gap:10px;scroll-snap-type:x mandatory;scroll-padding:0 4px;margin:0 -18px;padding:0 18px 4px}.tile{flex:0 0 76%;scroll-snap-align:start}}
 </style>
 </head>
 <body>
@@ -263,12 +277,13 @@ function drawFeed(){const el=$("#feed");if(!el)return;
  $("#fl").innerHTML=list.length?list.map(evHtml).join(""):`<div class="msg">${!S.live?"Nothing live yet.":LV.filter=="moves"?"No roster moves this week yet.":"Waiting for plays involving players on your league’s rosters. They appear here as they happen."}</div>`}
 
 function sec(id,t,b,k){return`<section id="${id}">${k?`<div class="kick">${k}</div>`:""}<h2 class="sh">${t}</h2>${b}</section>`}
-function drawSnapshot(){const el=$("#sn");if(!el)return;const T=S.T,hasR=S.played.length>0;
- const card=(h,body,p)=>`<div class="card stat"><h3>${h}</h3><div class="sv">${body}</div><p>${p}</p></div>`;
- let o=card(S.L.status==="complete"?"Season":"Right now",`<span class="num" style="font-size:32px;font-weight:700">${S.live?"Week "+S.state.week:esc(S.L.season)}</span>`,esc(S.L.name)+" · "+T.length+" teams");
+function drawSnapshot(){const el=$("#sn");if(!el)return;const T=S.T,hasR=S.played.length>0,done=S.L.status==="complete";
+ const tile=(ic,lab,t,big,sub)=>`<div class="tile"><div class="tl">${ic} ${lab}</div><div class="tw">${nm(t)}</div><div class="tb">${big}</div><div class="ts">${sub}</div></div>`;
+ let tiles="";
  if(hasR){computePower();const rec=t=>`${t.w}-${t.l}${t.t?"-"+t.t:""}`,lead=[...T].sort((a,b)=>(b.w+b.t/2)-(a.w+a.t/2)||b.pf-a.pf)[0],top=[...T].sort((a,b)=>b.power-a.power)[0],hi=[...T].sort((a,b)=>b.pf-a.pf)[0];
-  o+=card("League leader",nm(lead),rec(lead)+" record")+card("Top power ranking",nm(top),"Best mix of form and roster")+card("Most points scored",nm(hi),f1(hi.pf)+" total")}
- el.innerHTML=`<div class="fx snap" style="--cd:${hasR?4:1}">${o}</div>`}
+  tiles=tile("👑","League leader",lead,rec(lead),"record")+tile("⚡","Top power rank",top,"#1","in the power rankings")+tile("🎯","Most points",hi,f1(hi.pf),"points so far")}
+ const big=done||!S.live?esc(S.L.season):"Week "+S.state.week;
+ el.innerHTML=`<div class="hero"><div class="hl2"><div class="kick">${done?"Season complete":"Right now"}</div><div class="hbig">${big}</div><div class="hsub">${esc(S.L.name)}</div><div class="hchips"><span class="chip2">${T.length} teams</span>${hasR?`<span class="chip2">${S.played.length} week${S.played.length==1?"":"s"} played</span>`:""}${S.live?'<span class="chip2 live"><i class="pulse"></i>In season</span>':""}</div></div>${tiles?`<div class="tiles">${tiles}</div>`:""}</div>`}
 async function renderPage(){const L0=S.L;
  const done=S.L.status==="complete";if(done&&S.played.length)S.cur=S.played[S.played.length-1];
  const P=(id,nav,title,body,k)=>({id,nav,html:sec(id,title,body,k)}),
@@ -279,7 +294,7 @@ async function renderPage(){const L0=S.L;
   br=P("brackets",done?"Playoff results":"Brackets",done?"Playoff &amp; Poo Bowl results":"Playoff &amp; Poo Bowl brackets",'<div id="br"><div class="msg">Loading…</div></div>',done?"Final results":"League race"),
   ins=P("insights","Insights","Insights",insights(),"The numbers"),
   hall=P("hall","Hall of Fame","Hall of Fame &amp; Shame",'<div id="hf"><div class="msg">Loading…</div></div>',"The banter");
- const order=done?[br,st,pw,mu,ins,hall]:[mu,st,pw,ol,br,ins,hall];
+ const order=done?[br,st,pw,mu,hall,ins]:[mu,st,pw,ol,br,hall,ins];
  app.innerHTML='<div id="rc"></div><div id="sn"></div>'+order.map(x=>x.html).join("");
  $("#jump").innerHTML=order.map(x=>`<a class="tab" href="#${x.id}">${x.nav}</a>`).join("");
  if(done)loadActual();
