@@ -332,6 +332,13 @@ html::-webkit-scrollbar{width:10px}html::-webkit-scrollbar-track{background:#0a1
 }
 .mr .num.pj{color:var(--mute)!important;font-weight:500}
 @media (max-width:700px){#tt{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;overflow:visible!important}#tt button{width:100%;margin:0!important;white-space:nowrap;text-align:center;padding-left:6px;padding-right:6px}}
+table .pos,table .neg{font:inherit!important;font-weight:600!important;letter-spacing:inherit!important}
+.trd{margin:10px 0 14px}.trh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:16px;margin-bottom:8px;color:var(--ink)}.trh small{color:var(--mute);font-size:12px;white-space:nowrap}
+.trs{border-left:2px solid var(--line);padding:2px 0 6px 12px;margin:0 0 6px}.trn{display:flex;align-items:center;gap:8px;font-size:15px;margin:6px 0 4px;color:var(--ink)}.trn .av{width:26px;height:26px;flex:none;font-size:12px}.trn small{color:var(--mute);font-size:12px}
+.trp{display:flex;align-items:center;gap:10px;padding:5px 0}.trp .sg{width:16px;text-align:center;font-size:20px;line-height:1;flex:none}.trp.add .sg{color:#2de2e6}.trp.sub .sg{color:#ff7a93}
+.trp .ph{width:40px;height:40px;flex:none}.trp .ph.pk{font-size:18px}.trp .tn b{display:block;font-size:15px;line-height:1.2;color:var(--ink)}.trp .tn small{display:block;font-size:12px;color:var(--mute);margin-top:1px}
+.trdet>summary{cursor:pointer;list-style:none;font-size:17px}.trdet>summary::-webkit-details-marker{display:none}.trdet>summary::before{content:"▸ ";color:var(--flag)}.trdet[open]>summary::before{content:"▾ "}#trt button small{opacity:.7;margin-left:3px}
+.trgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:start}.trgrid .trd{margin:0;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:linear-gradient(180deg,#152651,#0f1c3d)}@media(max-width:1100px){.trgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:700px){.trgrid{grid-template-columns:minmax(0,1fr)}}
 </style>
 </head>
 <body>
@@ -376,6 +383,11 @@ async function loadLeague(l){busy("Crunching "+esc(l.name)+"…");
 const LV={events:[],prev:{},lead:{},seen:new Set(),ready:false,week:null,updated:0,timer:null,tick:null,espn:null,games:new Set(),pseen:new Set(),liveIds:new Set(),filter:"game",err:0,eok:0,pd:{},dq:{},tab:"all",unread:{},pairs:null,mk:{},n:0,busyS:false,busyE:false,fw:null,cw:null,W:{},loaded:false,loading:false,limit:60,gs:{}};
 const SIGN=d=>(d>0?"+":"−")+Math.abs(d).toFixed(2);
 const ago=t=>{const s=Math.max(0,(Date.now()-t)/1000);return s<10?"just now":s<60?Math.floor(s)+"s ago":s<3600?Math.floor(s/60)+"m ago":s<86400?Math.floor(s/3600)+"h ago":Math.floor(s/86400)+"d ago"};
+function tradeHtml(t){const pi=id=>{const q=PL&&PL[id];return q?`${esc(q.position||"")} - ${esc(q.team||"FA")}`:""},pname=id=>{const q=PL&&PL[id];return q?esc((q.first_name?q.first_name[0]+". ":"")+(q.last_name||q.full_name||id)):(isNaN(id)?esc(id)+" D/ST":"Player")},
+ line=(sg,inner)=>`<div class="trp ${sg=="+"?"add":"sub"}"><span class="sg">${sg=="+"?"+":"−"}</span>${inner}</div>`,
+ pl=(sg,id)=>line(sg,`${photo(id)}<div class="tn"><b>${pname(id)}</b><small>${pi(id)}</small></div>`),
+ pk=(sg,txt)=>line(sg,`<span class="ph pk">🏈</span><div class="tn"><b>${esc(txt)}</b><small>Draft pick</small></div>`);
+ return`<div class="trd"><div class="trh"><span>A trade has been completed.</span><small>${esc(t.y)} · Week ${t.w||"?"}</small></div>${t.sides.map(z=>`<div class="trs"><div class="trn">${av({av:z.av,mgr:z.mgr,name:z.team})}<span><b>${esc(z.team)}</b>${z.mgr&&z.mgr!==z.team?` <small>(${esc(z.mgr)})</small>`:""}’s Roster</span></div>${z.got.map(i=>pl("+",i)).join("")}${z.picks.map(x=>pk("+",x)).join("")}${z.lost.map(i=>pl("-",i)).join("")}${z.lostPicks.map(x=>pk("-",x)).join("")}</div>`).join("")}</div>`}
 function photo(id){const def=isNaN(id),u=def?`https://sleepercdn.com/images/team_logos/nfl/${String(id).toLowerCase()}.png`:`https://sleepercdn.com/content/nfl/players/thumb/${id}.jpg`;return`<img class="ph" src="${u}" alt="" loading="lazy" onerror="this.style.opacity=0">`}
 const pinfo=id=>{const p=PL&&PL[id];return p?`${esc(p.position||"")} · ${esc(p.team||"FA")}`:""};
 const tname=id=>{const t=S.by[id];return t?`<span class="who sm">${av(t)}<span class="wt"><b>${esc(t.name)}</b>${t.mgr&&t.mgr!==t.name?`<small>(${esc(t.mgr)})</small>`:""}</span></span>`:"Team"};
@@ -499,17 +511,26 @@ async function renderPage(){const L0=S.L;
   pw=P("power","Power rankings","Power rankings",'<div id="pw"></div>',"League race"),
   ol=P("outlook","Playoff outlook","Playoff outlook",'<div id="ol"><div class="msg">Running 20,000 season simulations…</div></div>',"League race"),
   br=P("brackets","Brackets",done?"Playoff &amp; Poo Bowl results":"Playoff &amp; Poo Bowl brackets",'<div id="br"><div class="msg">Loading…</div></div>',done?"Final results":"League race"),
+  trd=P("trades","Trade ledger","Trade ledger",'<div id="trl"><div class="msg">Loading…</div></div>',"Season on season"),
   hall=P("hall","Hall of Fame","Hall of Fame &amp; Shame",'<div id="hf"><div class="msg">Loading…</div></div>',"The banter");
  const tabs=done?[["st","Standings"],["pw","Power rankings"],["lk","Luck index"]]:[["st","Standings"],["pw","Power rankings"],["ol","Playoff odds"],["lk","Luck index"]];
  const tb=P("tables","Tables","League tables",`<div class="years tabs" id="tt" role="tablist" aria-label="Tables">${tabs.map(([k,n],i)=>`<button type="button" role="tab" data-t="${k}" aria-pressed="${i==0}">${n}</button>`).join("")}</div><div id="p-st">${standings()}</div><div id="pw" hidden></div>${done?"":'<div id="ol" hidden><div class="msg">Running 20,000 season simulations…</div></div>'}<div id="lk" hidden>${luckIndex()}</div>`,"League race");
- const order=[mu,tb,br,hall];
+ const order=[mu,tb,br,trd,hall];
  app.innerHTML='<div id="rc"></div><div id="sn"></div>'+order.map(x=>x.html).join("");
  $("#tt").onclick=e=>{const b=e.target.closest("button");if(!b)return;$("#tt").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));["st","pw","ol","lk"].forEach(k=>{const el=$(k=="st"?"#p-st":"#"+k);if(el)el.hidden=k!==b.dataset.t})};
  $("#jump").innerHTML=order.map(x=>`<a class="tab" href="#${x.id}">${x.nav}</a>`).join("");
  if(done)loadActual();
+ loadSeasonTrades(L0);
  startLive();drawSnapshot();drawPower();drawMatchups();loadDraft().then(drawPower);
  try{await players();drawPower();drawSnapshot();drawHall();drawMatchups();if(S.L===L0){buildIdx();startEspn()}drawFeed()}catch(e){}
  if(!done)setTimeout(()=>{drawOutlook();drawBracket()},0)}
+const TQUIET=["Not a single trade. The trade button is gathering dust and so is everyone’s imagination.","Zero trades. The group chat was apparently just for memes.","Nobody traded all season. A league of hoarders.","No trades. Everyone thought they were already winning the trade.","Crickets. Not one manager could be bothered to send an offer."];
+async function loadSeasonTrades(L0){const id=L0.league_id;let tx=[];
+ try{tx=(await Promise.all(Array.from({length:18},(_,i)=>get(`/league/${id}/transactions/${i+1}`).catch(()=>[])))).flat().filter(x=>x&&x.type==="trade"&&x.status==="complete")}catch(e){}
+ await players().catch(()=>{});if(S.L!==L0||!$("#trl"))return;
+ const list=tx.map(x=>({y:L0.season,w:x.leg,ts:x.status_updated||x.created||0,sides:(x.roster_ids||[]).map(rid=>{const t=S.by[rid]||{},ad=Object.entries(x.adds||{}),dr=Object.entries(x.drops||{}),pk=x.draft_picks||[];
+  return{team:t.name||"Team",mgr:t.mgr||"",av:t.av||"",got:ad.filter(([,r])=>r===rid).map(([i])=>i),lost:dr.filter(([,r])=>r===rid).map(([i])=>i),picks:pk.filter(d=>d.owner_id===rid).map(d=>d.season+" Round "+d.round+" pick"),lostPicks:pk.filter(d=>d.previous_owner_id===rid).map(d=>d.season+" Round "+d.round+" pick")}})})).sort((a,b)=>(b.w||0)-(a.w||0)||(b.ts||0)-(a.ts||0));
+ $("#trl").innerHTML=`<details class="card trdet" style="padding:12px 14px"><summary><b>Expand</b> <span class="note">· ${list.length} ${list.length==1?"trade":"trades"}</span></summary><div style="margin-top:10px">${list.length?`<div class="trgrid">${list.map(tradeHtml).join("")}</div>`:`<p class="note" style="margin:6px 0;font-size:15px">💩 ${TQUIET[hash(String(L0.season))%TQUIET.length]}</p>`}</div></details>`}
 function drawMatchups(){$("#mu").innerHTML=matchups();const w=$("#wsel");if(w)w.onchange=()=>{S.cur=+w.value;drawMatchups()}}
 
 const MHIDE=new Set(["PA","Exp. wins","Lineup pts","Proj. wins","Seasons","Playoffs"]);
@@ -720,9 +741,17 @@ function drawHall(){const el=$("#hf");if(!el)return;
  if(wkLow&&wkLow!==wkTop)X.push(hc("s","🚒","Week "+lw+" dumpster fire",f1(wkLow.points)+" pts",nm(S.by[wkLow.roster_id]),"Lowest score of the latest week. Someone call the fire brigade."));
  const grid=a=>`<div class="fx" style="--cd:${cols(a.length,3)};--cm:2">${a.join("")}</div>`;
  el.innerHTML=`<h3 class="hh">🏆 The glazing corner</h3>${grid(G)}<h3 class="hh">🚽 The wall of shame</h3>${grid(X)}<p class="note">All of this is judged on your league’s own scoring, finished weeks only. It is meant in good fun, so keep the group chat friendly.</p>`}
-const norm=x=>String(x||"").toLowerCase().replace(/[^a-z0-9]/g,"");
+const norm=x=>String(x||"").toLowerCase().replace(/[^a-z0-9]/g,"").replace(/0/g,"o").replace(/[1i]/g,"l");/* look-alike characters (0/o, 1/l/i) count as the same */
 const MANUAL_HISTORY=[/* hand-entered results; managers are matched by their Sleeper display name */
- {season:"2024",champion:"LEMURxxx",championTeam:"Presgoats",pooLoser:"BoscacciPanth",pooTeam:"Bosc"},
+ {season:"2024",champion:"LEMURxxx",championTeam:"Dak Presgoats",runnerUp:"anthonysidoti",pooLoser:"BoscacciS",pooTeam:"Bosc",
+  /* full 2024 regular season, hand-entered: h = Sleeper username, seed 1-4 made the playoffs */
+  standings:[
+   {h:"dez01",team:"Dez dont play",mgr:"Alex De Saram",w:12,l:2,pf:2005.26,pa:1636.00,seed:1},
+   {h:"LEMURxxx",team:"Dak Presgoats",mgr:"Liam Roche",w:7,l:7,pf:1804.06,pa:1763.30,seed:2},
+   {h:"delusionalcoltsfan",team:"Delusional Colts Fan",mgr:"Luke Bajan",w:7,l:7,pf:1796.46,pa:1841.94,seed:3},
+   {h:"anthonysidoti",team:"Fork the Nabers",mgr:"Anthony Sidoti",w:6,l:8,pf:1714.36,pa:1771.78,seed:4},
+   {h:"JoshSoos",team:"TD Metcalf",mgr:"Joshua Soosay",w:5,l:9,pf:1652.90,pa:1767.98,seed:5},
+   {h:"BoscacciS",team:"Bosc",mgr:"Steven Boscacci",w:5,l:9,pf:1639.48,pa:1831.52,seed:6}]},
  {season:"2025",pooLoser:"burnzie2k"}
 ];
 const EXTRA_LEAGUE_IDS=[];/* optional: paste older Sleeper league IDs here, e.g. ["123456789012345678"] */
@@ -752,8 +781,10 @@ function aggregateAT(rows){const P={},miss=[];
    if(fw&&ro[fw.w]&&P[ro[fw.w].owner_id])P[ro[fw.w].owner_id].titles.push({y:se.y,team:tn(fw.w)});else miss.push(se.y);
    if(fl&&ro[fl.w]&&P[ro[fl.w].owner_id])P[ro[fl.w].owner_id].poo.push({y:se.y,team:tn(fl.w)})}});
  const byName=(...names)=>{const ns=names.map(norm).filter(Boolean),L=Object.values(P);return L.find(p=>ns.some(n=>p.al&&p.al.has(n)))||L.find(p=>ns.some(n=>n.length>=4&&p.al&&[...p.al].some(a=>a.length>=4&&(a.includes(n)||n.includes(a)))))},
-  person=(n,team)=>byName(n,team)||(P["manual:"+n]={id:"manual:"+n,mgr:n,team:team||n,av:"",seasons:0,w:0,l:0,t:0,pf:0,pa:0,titles:[],poo:[],playoffs:0,al:new Set()});
+  exact=(...names)=>{const ns=names.map(norm).filter(Boolean);return Object.values(P).find(p=>ns.some(n=>p.al&&p.al.has(n)))},
+  person=(n,team,mgr)=>exact(n)||byName(n)||exact(team,mgr)||(P["manual:"+n]={id:"manual:"+n,mgr:mgr||n,team:team||n,av:"",seasons:0,w:0,l:0,t:0,pf:0,pa:0,titles:[],poo:[],playoffs:0,al:new Set([norm(n),norm(team),norm(mgr)].filter(Boolean))});
  MANUAL_HISTORY.forEach(m=>{
+  if(m.standings&&!rows.some(r=>String(r.y)===m.season))m.standings.forEach(z=>{const p=person(z.h,z.team,z.mgr);if(!p.seasons||p.id.startsWith("manual:")||true){p.seasons++;p.w+=z.w;p.l+=z.l;p.pf+=z.pf;p.pa+=z.pa;if(z.seed<=4)p.playoffs++;[z.h,z.team,z.mgr].forEach(x=>{if(norm(x))p.al.add(norm(x))})}});
   if(m.champion){Object.values(P).forEach(p=>{p.titles=p.titles.filter(t=>t.y!==m.season)});const p=person(m.champion,m.championTeam);p.titles.push({y:m.season,team:m.championTeam||p.team});const k=miss.indexOf(m.season);if(k>=0)miss.splice(k,1)}
   if(m.pooLoser){Object.values(P).forEach(p=>{p.poo=p.poo.filter(t=>t.y!==m.season)});const p=person(m.pooLoser,m.pooTeam);p.poo.push({y:m.season,team:m.pooTeam||p.team})}});
  return{list:Object.values(P),miss}}
@@ -771,9 +802,9 @@ function renderAllTime(rows){const A=aggregateAT(rows),P=A.list,miss=A.miss,mk=p
  const T=[...P].sort((a,b)=>pct(b)-pct(a)||b.w-a.w||b.pf-a.pf),open=rows.some(r=>r.l.status!=="complete");
  const tbl=`<div class="card scroll"><p class="note">Seasons included: ${rows.map(r=>r.y).join(", ")}${MANUAL_HISTORY.filter(m=>!rows.some(r=>r.y==m.season)).length?" (plus "+MANUAL_HISTORY.filter(m=>!rows.some(r=>r.y==m.season)).map(m=>m.season).join(", ")+" results added by hand)":""} · ${P.length} managers · ${champs.length} different champion${champs.length==1?"":"s"}${open?". Includes the current season so far":""}. Ranked by win percentage.</p><table><tr><th>#</th><th>Manager</th><th>Seasons</th><th>Record</th><th>Win %</th><th>PF</th><th>PA</th><th>🏆</th><th>🚽</th><th>Playoffs</th></tr>${T.map((p,i)=>`<tr><td class="rank num">${i+1}</td><td class="team">${nm(mk(p))}</td><td>${p.seasons}</td><td>${p.w}-${p.l}${p.t?"-"+p.t:""}</td><td>${(pct(p)*100).toFixed(1)}%</td><td>${f1(p.pf)}</td><td>${f1(p.pa)}</td><td class="${p.titles.length?"gold":""}">${p.titles.length}</td><td>${p.poo.length}</td><td>${p.playoffs}</td></tr>`).join("")}</table></div>`;
  const missNote=miss.length?`<p class="note">No champion is recorded in Sleeper for ${miss.join(", ")}, so those seasons have no trophy here.</p>`:"";
- app.innerHTML=sec("cabinet","Trophy cabinet",cab+missNote,"Hall of champions")+sec("toilet","Toilet bowl cabinet",tcab,"Hall of shame")+sec("alltime","All-time standings",tbl,"Every season")+sec("athall","All-time Hall of Fame &amp; Shame",'<div id="athf"><div class="msg">Digging through every season…</div></div>',"Fun with numbers");
+ app.innerHTML=sec("cabinet","Trophy cabinet",cab+missNote,"Hall of champions")+sec("toilet","Toilet bowl cabinet",tcab,"Hall of shame")+sec("alltime","All-time standings",tbl,"Every season")+sec("attrades","Trade ledger",'<div id="attr"><div class="msg">Counting the deals…</div></div>',"Season on season")+sec("athall","All-time Hall of Fame &amp; Shame",'<div id="athf"><div class="msg">Digging through every season…</div></div>',"Fun with numbers");
  const A_=A;loadATExtra(rows).then(ex=>{if($("#athf"))drawATHall(rows,ex,A_)}).catch(()=>{const e=$("#athf");if(e)e.innerHTML='<div class="msg">Couldn’t load the all-time fun stats right now.</div>'});
- $("#jump").innerHTML='<a class="tab" href="#cabinet">Trophy cabinet</a><a class="tab" href="#toilet">Toilet bowl</a><a class="tab" href="#alltime">All-time standings</a><a class="tab" href="#athall">All-time fun</a>'}
+ $("#jump").innerHTML='<a class="tab" href="#cabinet">Trophy cabinet</a><a class="tab" href="#toilet">Toilet bowl</a><a class="tab" href="#alltime">All-time standings</a><a class="tab" href="#attrades">Trade ledger</a><a class="tab" href="#athall">All-time fun</a>'}
 async function showAllTime(by,yrs){stopLive();S.live=false;$("#feed").hidden=true;$(".layout").classList.add("noaside");
  const ys=[...yrs].sort();$("#ttl").textContent=by[yrs[0]].name;$(".sub").textContent="All time · "+ys[0]+(ys.length>1?"–"+ys[ys.length-1]:"")+" · League insights powered by Sleeper";document.title=by[yrs[0]].name+" · All time · NFLDO";
  busy("Gathering every season…");
@@ -795,7 +826,7 @@ function drawATHall(rows,ex,A){const el=$("#athf");if(!el)return;players().catch
     if(a.points===b.points){[ua,ub].forEach(u=>{(hist[u]??=[]).push("T");(luck[u]??={win:0,xw:0}).win+=.5});return}
     const W=a.points>b.points?{u:ua,t:ta,p:a.points}:{u:ub,t:tb,p:b.points},L=a.points>b.points?{u:ub,t:tb,p:b.points}:{u:ua,t:ta,p:a.points};
     (hist[W.u]??=[]).push("W");(hist[L.u]??=[]).push("L");(luck[W.u]??={win:0,xw:0}).win+=1;(luck[L.u]??={win:0,xw:0});games.push({y:se.y,w,W,L,m:W.p-L.p})})});
-  ex[si].tx.forEach(x=>{if(x.type==="trade"){ledger.push({y:se.y,w:x.leg,sides:(x.roster_ids||[]).map(rid=>({team:tn(rid),mgr:(um[own(rid)]||{}).display_name||"",got:Object.entries(x.adds||{}).filter(([,r])=>r===rid).map(([id])=>id),picks:(x.draft_picks||[]).filter(d=>d.owner_id===rid).map(d=>d.season+" R"+d.round)}))})}if(x.type==="trade")(x.roster_ids||[]).forEach(rid=>{const u=own(rid);if(u)trades[u]=(trades[u]||0)+1});
+  ex[si].tx.forEach(x=>{if(x.type==="trade"){ledger.push({y:se.y,w:x.leg,ts:x.status_updated||x.created||0,sides:(x.roster_ids||[]).map(rid=>{const u=um[own(rid)]||{};return{team:tn(rid),mgr:u.display_name||"",av:(u.metadata&&u.metadata.avatar)||(u.avatar?"https://sleepercdn.com/avatars/thumbs/"+u.avatar:""),got:Object.entries(x.adds||{}).filter(([,r])=>r===rid).map(([id])=>id),lost:Object.entries(x.drops||{}).filter(([,r])=>r===rid).map(([id])=>id),picks:(x.draft_picks||[]).filter(d=>d.owner_id===rid).map(d=>d.season+" Round "+d.round+" pick"),lostPicks:(x.draft_picks||[]).filter(d=>d.previous_owner_id===rid).map(d=>d.season+" Round "+d.round+" pick")}})})}if(x.type==="trade")(x.roster_ids||[]).forEach(rid=>{const u=own(rid);if(u)trades[u]=(trades[u]||0)+1});
    else if(x.type==="waiver"||x.type==="free_agent")Object.values(x.adds||{}).forEach(rid=>{const u=own(rid);if(u)adds[u]=(adds[u]||0)+1})})});
  const streak=(a,c)=>{let m=0,k=0;(a||[]).forEach(r=>{k=r===c?k+1:0;m=Math.max(m,k)});return m},srt=(a,f)=>[...a].sort((x,y)=>f(y)-f(x)),R=(a,k)=>a[hash(String(k))%a.length],pct=p=>{const g=p.w+p.l+p.t;return g?(p.w+p.t/2)/g:0};
  const nmU=(u,team)=>{const p=PM[u]||{};return nm({name:team||p.team||p.mgr,mgr:p.mgr,av:p.av})},nmP=p=>nm({name:p.team||p.mgr,mgr:p.mgr,av:p.av});
@@ -833,7 +864,17 @@ function drawATHall(rows,ex,A){const el=$("#athf");if(!el)return;players().catch
  if(cob){const z=people.filter(p=>(adds[p.id]||0)===(adds[cob.id]||0)).length;X.push(hc("s","🕸️","Cobwebs on the roster",(adds[cob.id]||0)+((adds[cob.id]||0)==1?" pickup":" pickups"),nmP(cob),"Set the roster at the draft and left it to rot."+(z>1?` (${z-1} other manager${z>2?"s":""} tied.)`:"")))}
  if(shy){const z=people.filter(p=>(trades[p.id]||0)===(trades[shy.id]||0)).length;X.push(hc("s","🚫","Trade-shy",(trades[shy.id]||0)+((trades[shy.id]||0)==1?" trade":" trades"),nmP(shy),"Do they even know the trade button exists?"+(z>1?` (${z-1} other manager${z>2?"s":""} tied.)`:"")))}
  const grid=a=>`<div class="fx" style="--cd:${cols(a.length,3)};--cm:2">${a.join("")}</div>`;
- el.innerHTML=`<h3 class="hh">🏆 The all-time glazing corner</h3>${grid(G)}<h3 class="hh">🚽 The all-time wall of shame</h3>${grid(X)}${(()=>{const nmp=id=>{const q=PL&&PL[id];return q?(q.first_name?q.first_name[0]+". ":"")+(q.last_name||q.full_name||id):"player "+id};return`<details class="card" style="padding:10px 14px"><summary><b>Trade ledger (${ledger.length})</b> <span class="note">every trade counted above, to double-check</span></summary>${ledger.length?ledger.sort((a,b)=>b.y-a.y||(b.w||0)-(a.w||0)).map(t=>`<p class="note" style="margin:8px 0"><b>${t.y} · week ${t.w}</b><br>${t.sides.map(z=>`${esc(z.team)}${z.mgr&&z.mgr!==z.team?" ("+esc(z.mgr)+")":""} got: ${[...z.got.map(nmp),...z.picks].map(esc).join(", ")||"nothing"}`).join("<br>")}</p>`).join(""):`<p class="note">No completed trades found in Sleeper for these seasons.</p>`}</details>`})()}<p class="note">Built from every Sleeper season in the table above: finished regular-season weeks, trades and pickups. Hand-entered seasons only add trophies and toilet bowls. All in good fun.</p>`}}
+ el.innerHTML=`<h3 class="hh">🏆 The all-time glazing corner</h3>${grid(G)}<h3 class="hh">🚽 The all-time wall of shame</h3>${grid(X)}<p class="note">Built from every Sleeper season in the table above: finished regular-season weeks, trades and pickups. Hand-entered seasons (2024) count for the standings table and trophies, but not for week-by-week stats, trades or waivers. All in good fun.</p>`;
+  const trEl=$("#attr");if(trEl){const nmp=id=>{const q=PL&&PL[id];return q?(q.first_name?q.first_name[0]+". ":"")+(q.last_name||q.full_name||id):"player "+id},
+   QUIET=["Not a single trade. The trade button is gathering dust and so is everyone’s imagination.","Zero trades. The group chat was apparently just for memes.","Nobody traded all season. A league of hoarders.","No trades. Everyone thought they were already winning the trade.","Crickets. Not one manager could be bothered to send an offer."],
+   seasons=rows.map(r=>r.y).sort().reverse();
+   const man=MANUAL_HISTORY.filter(m=>m.standings&&!rows.some(r=>String(r.y)===m.season)).map(m=>m.season),all=[...new Set([...seasons,...man])].sort().reverse(),
+    pane=y=>{if(man.includes(y))return`<p class="note" style="margin:6px 0">This season was entered by hand, so there’s no trade history to show.</p>`;
+     const L=ledger.filter(t=>t.y===y).sort((a,b)=>(b.w||0)-(a.w||0)||(b.ts||0)-(a.ts||0));
+     return L.length?`<div class="trgrid">${L.map(tradeHtml).join("")}</div>`:`<p class="note" style="margin:6px 0;font-size:15px">💩 ${QUIET[hash(String(y))%QUIET.length]}</p>`},
+    cnt=y=>ledger.filter(t=>t.y===y).length;
+   trEl.innerHTML=`<details class="card trdet" style="padding:12px 14px"><summary><b>Expand</b> <span class="note">· ${ledger.length} ${ledger.length==1?"trade":"trades"} across ${seasons.length} ${seasons.length==1?"season":"seasons"}</span></summary><div class="years tabs" id="trt" role="tablist" style="margin:12px 0 6px">${all.map((y,i)=>`<button type="button" role="tab" data-y="${esc(y)}" aria-pressed="${i==0}">${esc(y)}${man.includes(y)?"":` <small>${cnt(y)}</small>`}</button>`).join("")}</div>${all.map((y,i)=>`<div class="trpane" data-y="${esc(y)}" ${i?"hidden":""}>${pane(y)}</div>`).join("")}</details>`;
+   $("#trt").onclick=e=>{const bt=e.target.closest("button");if(!bt)return;$("#trt").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===bt));trEl.querySelectorAll(".trpane").forEach(d=>d.hidden=d.dataset.y!==bt.dataset.y)}}}}
 const tname2=x=>`<b>${esc(x.t)}</b>`;
 function tiers(R,key){const k=R.length>=8?3:2,g=R.slice(1).map((t,i)=>[R[i][key]-t[key],i]).sort((a,b)=>b[0]-a[0]).slice(0,k).map(x=>x[1]);let tr=1;return R.map((t,i)=>{const x=tr;if(g.includes(i))tr++;return x})}
 const mv=d=>d>0?`<span class="pos">▲${d}</span>`:d<0?`<span class="neg">▼${-d}</span>`:"–";
@@ -870,7 +911,7 @@ function sleeperTeamProj(x,t,P){const ids=(x.starters||[]).filter(id=>id&&id!=="
  if(ids.length<slots&&PL){const pool=(t.roster.players||[]).filter(id=>PL[id]).map(id=>({pos:PL[id].position,v:P.pts[id]||0}));return lineup(S.L.roster_positions,pool,0).tot}
  return ids.reduce((a,id)=>{const team=PL&&PL[id]?PL[id].team:null,st=team?LV.gs[team]:null,act=typeof pp[id]==="number"?pp[id]:0,p=P.pts[id]||0;return a+(st==="post"?act:st==="pre"?p:Math.max(act,p))},0)}
 function matchups(){const w=S.cur,m=S.wk[w-1]||[],g={};m.forEach(x=>(g[x.matchup_id]??=[]).push(x));
- const sel=`<select id="wsel" aria-label="Week" style="margin-bottom:10px">${S.wk.map((_,i)=>`<option value="${i+1}" ${i+1==w?"selected":""}>Week ${i+1}</option>`).join("")}</select>`;
+ const sel=`<select id="wsel" aria-label="Week" style="margin-bottom:10px">${S.wk.map((_,i)=>`<option value="${i+1}" ${i+1==w?"selected":""}>Week ${i+1}${i+1==S.state.week&&String(S.L.season)===String(S.state.season)&&S.L.status!=="complete"?" (current)":""}</option>`).join("")}</select>`;
  const fin=S.played.includes(w),showP=!fin,key=S.L.league_id+":"+w,P=showP?PJ[key]:null;if(showP&&!P)loadProj(w);
  const ok=!!P&&P.state==="ok",pairs=Object.values(g).filter(p=>p.length==2);
  const note=!showP?"":ok?"Projections are Sleeper’s own player projections, scored with your league’s settings. A starter whose game is over counts his actual points. Sleeper’s win percentage isn’t available outside the app, so it isn’t shown here.":(!P||P.state==="loading")?"Loading Sleeper’s projections…":"Sleeper’s projections couldn’t be loaded right now, so no projection is shown.";
