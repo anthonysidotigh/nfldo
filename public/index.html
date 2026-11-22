@@ -207,6 +207,15 @@ header{padding:12px 16px 0}.logo{width:64px;height:64px;border-radius:16px}.bran
 }
 .hc .ph{width:28px;height:28px;font-size:12px}
 @media (max-width:700px){.hc .ph{width:24px;height:24px}}
+#tt{margin-bottom:14px!important}.own{margin-top:6px}.own .es{font-size:11px}
+
+/* phone: show all three "Right now" tiles at once, no swiping */
+@media (max-width:700px){
+ .tiles{display:grid!important;grid-template-columns:minmax(0,1fr);overflow:visible!important;margin:0!important;padding:0!important;gap:8px;scroll-snap-type:none}
+ .tile{flex:none!important;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"tl tb" "tw ts";column-gap:12px;row-gap:3px;align-items:center;padding:9px 12px}
+ .tile .tl{grid-area:tl}.tile .tw{grid-area:tw;min-width:0}.tile .tb{grid-area:tb;margin:0;text-align:right;font-size:26px}.tile .ts{grid-area:ts;margin:0;text-align:right;font-size:11px}
+ .hl2{gap:0}.hbig{font-size:40px}
+}
 </style>
 </head>
 <body>
@@ -324,13 +333,12 @@ async function renderPage(){const L0=S.L;
   pw=P("power","Power rankings","Power rankings",'<div id="pw"></div>',"League race"),
   ol=P("outlook","Playoff outlook","Playoff outlook",'<div id="ol"><div class="msg">Running 20,000 season simulations…</div></div>',"League race"),
   br=P("brackets",done?"Playoff results":"Brackets",done?"Playoff &amp; Poo Bowl results":"Playoff &amp; Poo Bowl brackets",'<div id="br"><div class="msg">Loading…</div></div>',done?"Final results":"League race"),
-  ins=P("insights","Insights","Insights",insights(),"The numbers"),
   hall=P("hall","Hall of Fame","Hall of Fame &amp; Shame",'<div id="hf"><div class="msg">Loading…</div></div>',"The banter");
- const tabs=done?[["st","Standings"],["pw","Power rankings"]]:[["st","Standings"],["pw","Power rankings"],["ol","Playoff odds"]];
- const tb=P("tables","Tables","League tables",`<div class="years tabs" id="tt" role="tablist" aria-label="Tables">${tabs.map(([k,n],i)=>`<button type="button" role="tab" data-t="${k}" aria-pressed="${i==0}">${n}</button>`).join("")}</div><div id="p-st">${standings()}</div><div id="pw" hidden></div>${done?"":'<div id="ol" hidden><div class="msg">Running 20,000 season simulations…</div></div>'}`,"League race");
- const order=done?[br,tb,mu,hall,ins]:[mu,tb,br,hall,ins];
+ const tabs=done?[["st","Standings"],["pw","Power rankings"],["lk","Luck index"]]:[["st","Standings"],["pw","Power rankings"],["ol","Playoff odds"],["lk","Luck index"]];
+ const tb=P("tables","Tables","League tables",`<div class="years tabs" id="tt" role="tablist" aria-label="Tables">${tabs.map(([k,n],i)=>`<button type="button" role="tab" data-t="${k}" aria-pressed="${i==0}">${n}</button>`).join("")}</div><div id="p-st">${standings()}</div><div id="pw" hidden></div>${done?"":'<div id="ol" hidden><div class="msg">Running 20,000 season simulations…</div></div>'}<div id="lk" hidden>${luckIndex()}</div>`,"League race");
+ const order=done?[br,tb,mu,hall]:[mu,tb,br,hall];
  app.innerHTML='<div id="rc"></div><div id="sn"></div>'+order.map(x=>x.html).join("");
- $("#tt").onclick=e=>{const b=e.target.closest("button");if(!b)return;$("#tt").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));["st","pw","ol"].forEach(k=>{const el=$(k=="st"?"#p-st":"#"+k);if(el)el.hidden=k!==b.dataset.t})};
+ $("#tt").onclick=e=>{const b=e.target.closest("button");if(!b)return;$("#tt").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));["st","pw","ol","lk"].forEach(k=>{const el=$(k=="st"?"#p-st":"#"+k);if(el)el.hidden=k!==b.dataset.t})};
  $("#jump").innerHTML=order.map(x=>`<a class="tab" href="#${x.id}">${x.nav}</a>`).join("");
  if(done)loadActual();
  startLive();drawSnapshot();drawPower();drawMatchups();loadDraft().then(drawPower);
@@ -501,17 +509,20 @@ function drawHall(){const el=$("#hf");if(!el)return;
  const wStr=srt(T,t=>streak(res[t.id],"W"))[0],lStr=srt(T,t=>streak(res[t.id],"L"))[0],mvs=srt(T,t=>t.roster.settings.total_moves||0),most=mvs[0],fewest=mvs[mvs.length-1];
  const loseHigh=srt(games,g=>g.lp)[0],winLow=srt(games,g=>-g.wp)[0],blow=srt(games,g=>g.wp-g.lp)[0],pw=srt(T,t=>t.power),top=pw[0],bot=pw[pw.length-1];
  const lw=S.played[S.played.length-1],lm=(S.wk[lw-1]||[]).filter(x=>S.by[x.roster_id]).sort((a,b)=>b.points-a.points),wkTop=lm[0],wkLow=lm[lm.length-1];
- const avgScore=avg(T.map(t=>t.rs))||1,B=t=>`<b>${esc(t.name)}</b>`;
+ const avgScore=avg(T.map(t=>t.rs))||1,B=t=>tname(t.id),lk=srt(T,t=>t.luck)[0],ul=srt(T,t=>-t.luck)[0],cons=srt(T,t=>-t.sd)[0],boom=srt(T,t=>t.sd)[0],near=srt(games,g=>-(g.wp-g.lp))[0],sgn=v=>(v>0?"+":"")+v.toFixed(1);
  const hc=(cls,e,h,big,who,line)=>`<div class="card hc ${cls}"><div class="ht"><span class="he">${e}</span><h3>${h}</h3></div><div class="hb">${big}</div><div class="hw">${who}</div><p class="hl">${line}</p></div>`;
- const ply=(id,tid)=>`<span class="who">${photo(id)}<span class="wt"><b>${esc(pn(id))}</b><small>${pinfo(id)} · for ${esc(S.by[tid].name)}</small></span></span>`;
+ const ply=(id,tid)=>`<span class="who">${photo(id)}<span class="wt"><b>${esc(pn(id))}</b><small>${pinfo(id)}</small></span></span><div class="ln own"><span class="es">owned by</span>${tname(tid)}</div>`;
  const G=[],X=[];
  if(top)G.push(hc("g","👑","Team of the season","#1",nm(top),R(["Untouchable. Everyone else is just playing for second place.","At this point the trophy engraver should start on the nameplate.","Running this league like a masterclass. The rest of you are the warm-up act."],top.id)));
  if(hiW)G.push(hc("g","🔥","Highest score of the season",f1(hiW.p)+" pts",nm(hiW.t),R([`Week ${hiW.w}. Frame it, hang it in the Louvre.`,`Week ${hiW.w}, and not a single other team came close. Absolutely feral.`],hiW.w)));
  if(mvp)G.push(hc("g","🐐","League MVP",f1(mvp.pts)+" pts",ply(mvp.id,mvp.team),R(["Carrying the whole roster like a sherpa up Everest. Somebody build this man a statue.","Pure glaze material. Every start has been a gift to humanity."],mvp.id)));
  if(bs)G.push(hc("g","💥","Best single start",f1(bs.p)+" pts",ply(bs.id,bs.team),`Week ${bs.w}. The sort of game you screenshot and send to the group chat.`));
  if(eff)G.push(hc("g","🧠","Lineup genius",(bn[eff.id].act/bn[eff.id].opt*100).toFixed(0)+"%",nm(eff),"of the best possible lineup, every single week. Either a wizard or extremely lucky. We’re going with wizard."));
+ if(lk&&lk.luck>0)G.push(hc("g","🍀","Luckiest team",sgn(lk.luck)+" wins",nm(lk),R(["above what their scoring earned. The schedule gods are in love with them.","Winning games they had no business winning. Don’t question it, just take the W."],lk.id)));
+ if(cons)G.push(hc("g","🧘","Most consistent","±"+f1(cons.sd),nm(cons),R(["weekly swing. Mr. Reliable: you could set your watch by their scores.","Boringly brilliant. Never a disaster, never a surprise."],cons.id)));
  if(wStr&&streak(res[wStr.id],"W")>=3)G.push(hc("g","🚀","Longest win streak",streak(res[wStr.id],"W")+" in a row",nm(wStr),"Somebody check their lineup for witchcraft."));
  if(most&&(most.roster.settings.total_moves||0)>0)G.push(hc("g","📱","Waiver wire warrior",(most.roster.settings.total_moves||0)+((most.roster.settings.total_moves||0)==1?" move":" moves"),nm(most),"Never sleeps, never stops. Probably refreshing the waiver wire in the shower."));
+ if(near)G.push(hc("g","😬","Nail-biter of the season",f1(near.wp-near.lp)+" pts",nm(near.wt),`was all that separated them from ${B(near.lt)} in week ${near.w}. Somebody’s heart rate is still elevated.`));
  if(wkTop)G.push(hc("g","🏅","Week "+lw+" champ",f1(wkTop.points)+" pts",nm(S.by[wkTop.roster_id]),"Top score of the latest week. Everyone else, take notes."));
  if(bot)X.push(hc("s","🪵","Wooden spoon watch","Last",nm(bot),R(["Bottom of the power rankings. Bold of them to keep opening the app.","Rebuilding. Allegedly. For the fourth week running."],bot.id)));
  if(loW)X.push(hc("s","🧊","Lowest score of the season",f1(loW.p)+" pts",nm(loW.t),R([`Week ${loW.w}. A random number generator would have set a better lineup.`,`Week ${loW.w}. Put the laptop down and step away from the lineup.`],loW.w)));
@@ -523,6 +534,8 @@ function drawHall(){const el=$("#hf");if(!el)return;
  if(loseHigh)X.push(hc("s","💔","Heartbreak of the year",f1(loseHigh.lp)+" pts",nm(loseHigh.lt),`…and still lost to ${B(loseHigh.wt)} in week ${loseHigh.w}. The fantasy gods owe you an apology.`));
  if(winLow)X.push(hc("s","🙈","Most embarrassing win",f1(winLow.wp)+" pts",nm(winLow.wt),`Won with that in week ${winLow.w}. Take the win and quietly delete the box score.`));
  if(blow)X.push(hc("s","🔨","Biggest demolition",f1(blow.wp-blow.lp)+" pts",nm(blow.lt),`Got flattened by ${B(blow.wt)} in week ${blow.w}. Thoughts and prayers.`));
+ if(ul&&ul.luck<0)X.push(hc("s","🤡","Unluckiest team",sgn(ul.luck)+" wins",nm(ul),R(["below what their scoring earned. Robbed by the schedule. File a complaint with the commissioner.","Scoring like a contender, winning like a punching bag."],ul.id)));
+ if(boom)X.push(hc("s","🎢","Boom or bust","±"+f1(boom.sd),nm(boom),R(["weekly swing. A 150-point masterpiece one week, a crime scene the next. Never a dull moment.","Emotional rollercoaster. Their group chat messages must be unhinged."],boom.id)));
  if(lStr&&streak(res[lStr.id],"L")>=3)X.push(hc("s","📉","Longest losing streak",streak(res[lStr.id],"L")+" in a row",nm(lStr),"Is the app even installed?"));
  if(fewest&&fewest!==most)X.push(hc("s","🕸️","Cobwebs on the roster",(fewest.roster.settings.total_moves||0)+((fewest.roster.settings.total_moves||0)==1?" move":" moves"),nm(fewest),"Set the roster in August and left it to rot. Not a single pickup since."));
  if(wkLow&&wkLow!==wkTop)X.push(hc("s","🚒","Week "+lw+" dumpster fire",f1(wkLow.points)+" pts",nm(S.by[wkLow.roster_id]),"Lowest score of the latest week. Someone call the fire brigade."));
@@ -541,39 +554,40 @@ function power(){const hasR=S.played.length>0,hasD=S.dstate=="done";let mode=S.p
  return tog+`<div class="card scroll"><table><tr><th>#</th><th>Team</th><th>Record</th><th>Recent form</th><th>Lineup pts</th><th>Power</th>${hasD?"<th>Since draft</th>":""}</tr>${R.map((t,i)=>`<tr><td class="rank num">${i+1}</td><td class="team">${nm(t)}<span class="chip">Tier ${tr[i]}</span></td><td>${t.w}-${t.l}${t.t?"-"+t.t:""}</td><td>${f1(t.rs)}</td><td>${PL?f1(t.rost):"…"}</td><td><div class="bar"><i style="width:${t.power}%"></i></div></td>${hasD?`<td>${mv(t.drank-t.nrank)}</td>`:""}</tr>`).join("")}</table>
  <details style="margin-top:12px"><summary>How these rankings work</summary><p class="note" style="margin-top:8px">Each part is scaled 0–100 against the rest of the league, then blended. <b>Recent form (25%)</b>: scoring average where each older week counts 15% less. <b>All-play (15%)</b>: record against every team every week, which removes schedule luck. <b>Colley rating (20%)</b>: a win/loss rating that credits beating strong opponents. <b>Lineup strength (40%)</b>: the best starting lineup each roster can field today, using every player’s recent points in your league’s scoring, with players who are out or on IR discounted or removed. Roster moves and injuries move this part as soon as they happen. While the player database loads, the other three parts are used on their own. Tiers split the list at the biggest gaps in score.</p></details></div>`}
 
-function insights(){if(S.played.length<2)return'<div class="msg">Insights need at least two played weeks.</div>';
- const T=S.T,all=T.flatMap(t=>t.sc.map(s=>({t,...s})));
- const hi=all.reduce((a,b)=>b.p>a.p?b:a),lo=all.reduce((a,b)=>b.p<a.p?b:a);
- let close=null;S.wk.forEach((m,i)=>{if(!S.played.includes(i+1))return;const g={};m.forEach(x=>(g[x.matchup_id]??=[]).push(x));Object.values(g).forEach(p=>{if(p.length==2&&p[0].points+p[1].points>0){const d=Math.abs(p[0].points-p[1].points);if(!close||d<close.d)close={d,w:i+1,a:S.by[p[0].roster_id],b:S.by[p[1].roster_id],pa:p[0].points,pb:p[1].points}}})});
- const by=(k,dir=1)=>[...T].sort((a,b)=>dir*(b[k]-a[k]))[0];
- const c=(h,big,sub,s)=>`<div class="card stat"><h3>${h}</h3>${big}<p>${sub} ${s||""}</p></div>`,tm=t=>`<div class="sv">${nm(t)}</div>`,pts=v=>`<div class="num">${v}</div>`;
- const lk=by("luck"),ul=by("luck",-1),co=by("sd",-1),bb=by("sd");
- const ordered=[...T].sort((a,b)=>b.luck-a.luck),m=Math.max(...T.map(t=>Math.abs(t.luck)),1);
- return`<div class="fx" style="--cd:${cols(close?7:6,4)};--cm:2">
- ${c("Luckiest team",tm(lk),`${lk.luck>0?"+":""}${lk.luck.toFixed(1)} wins`,"above what their scoring earned")}
- ${c("Unluckiest team",tm(ul),`${ul.luck.toFixed(1)} wins`,"below what their scoring earned")}
- ${c("Most consistent",tm(co),"±"+f1(co.sd),"weekly swing")}
- ${c("Boom or bust",tm(bb),"±"+f1(bb.sd),"weekly swing")}
- ${c("Highest week",pts(f1(hi.p)+" pts")+tm(hi.t),"","in week "+hi.wk)}
- ${c("Lowest week",pts(f1(lo.p)+" pts")+tm(lo.t),"","in week "+lo.wk)}
- ${close?c("Closest game",pts(f1(close.d)+" pts")+tm(close.a)+`<div class="sv"><small style="color:var(--mute)">vs</small> ${nm(close.b)}</div>`,"","in week "+close.w):""}</div>
- <div class="card"><h2 style="margin-top:0">Luck index</h2><p class="note">Actual wins minus expected wins from all-play. Green means the schedule helped, red means it hurt.</p>
- ${ordered.map(t=>`<div class="row"><span>${nm(t)}</span><span class="${t.luck>=0?"pos":"neg"}">${t.luck>0?"+":""}${t.luck.toFixed(1)} <small>(${t.w+t.t/2} actual, ${t.xw.toFixed(1)} expected)</small></span></div>`).join("")}</div>`}
-
+function luckIndex(){if(S.played.length<2)return'<div class="msg">Luck needs at least two finished weeks.</div>';
+ const R=[...S.T].sort((a,b)=>b.luck-a.luck),rec=t=>`${t.w}-${t.l}${t.t?"-"+t.t:""}`;
+ return`<div class="card scroll"><p class="note">Actual wins minus the wins your scoring should have earned (your record against every team, every week). Green means the schedule helped, red means it hurt.</p><table><tr><th>#</th><th>Team</th><th>Record</th><th>Expected wins</th><th>Luck</th></tr>${R.map((t,i)=>`<tr><td class="rank num">${i+1}</td><td class="team">${nm(t)}</td><td>${rec(t)}</td><td>${t.xw.toFixed(1)}</td><td class="${t.luck>=0?"pos":"neg"}">${t.luck>0?"+":""}${t.luck.toFixed(1)}</td></tr>`).join("")}</table></div>`}
 function standings(){const r=[...S.T].sort((a,b)=>(b.w+b.t/2)-(a.w+a.t/2)||b.pf-a.pf);
  return`<div class="card scroll"><table><tr><th>#</th><th>Team</th><th>W-L</th><th>PF</th><th>PA</th><th>Diff</th><th>Exp. wins</th><th>Luck</th></tr>${r.map((t,i)=>`<tr><td class="rank num">${i+1}</td><td class="team">${nm(t)}</td><td>${t.w}-${t.l}${t.t?"-"+t.t:""}</td><td>${f1(t.pf)}</td><td>${f1(t.pa)}</td><td class="${t.pf>=t.pa?"pos":"neg"}">${t.pf>=t.pa?"+":""}${f1(t.pf-t.pa)}</td><td>${t.xw.toFixed(1)}</td><td class="${t.luck>=0?"pos":"neg"}">${t.luck>0?"+":""}${t.luck.toFixed(1)}</td></tr>`).join("")}</table></div>`}
 
 function pendFrac(x){const st=(x.starters||[]).filter(id=>id&&id!=="0"),pp=x.players_points||{};return st.length?st.filter(id=>!(pp[id]>0)).length/st.length:1}
+const PJ={};
+async function jget(u){const r=await fetch(u);if(!r.ok)throw new Error(r.status);return r.json()}
+async function loadProj(w){const L=S.L,key=L.league_id+":"+w;if(PJ[key])return;PJ[key]={state:"loading"};
+ const pos=[...new Set(["QB","RB","WR","TE","K","DEF",...(L.roster_positions||[]).flatMap(x=>ELIG[x]||[])])];
+ try{const got=await Promise.all(pos.map(p=>{const q=`/projections/nfl/${L.season}/${w}?season_type=regular&position[]=${p}`;return jget("https://api.sleeper.app"+q).catch(()=>jget("https://api.sleeper.com"+q))}));
+  const pts={},sc=L.scoring_settings||{};
+  got.flat().forEach(o=>{if(!o||!o.player_id)return;const st=o.stats||{};let v=0,any=false;for(const k in sc)if(typeof st[k]==="number"){v+=st[k]*sc[k];any=true}
+   if(!any)v=st.pts_ppr??st.pts_half_ppr??st.pts_std??0;pts[o.player_id]=v});
+  if(Object.keys(pts).length==0)throw new Error("empty");
+  PJ[key]={state:"ok",pts}}catch(e){PJ[key]={state:"err"}}
+ if(S.L===L)drawMatchups()}
+function sleeperTeamProj(x,t,P){const st=(x.starters||[]).filter(id=>id&&id!=="0"),slots=(S.L.roster_positions||[]).filter(z=>ELIG[z]).length;
+ if(st.length<slots&&PL){const pool=(t.roster.players||[]).filter(id=>PL[id]).map(id=>({pos:PL[id].position,v:P.pts[id]||0}));return lineup(S.L.roster_positions,pool,0).tot}
+ return st.reduce((a,id)=>a+(P.pts[id]||0),0)}
 function matchups(){const w=S.cur,m=S.wk[w-1]||[],g={};m.forEach(x=>(g[x.matchup_id]??=[]).push(x));
  const sel=`<select id="wsel" aria-label="Week" style="margin-bottom:10px">${S.wk.map((_,i)=>`<option value="${i+1}" ${i+1==w?"selected":""}>Week ${i+1}</option>`).join("")}</select>`;
- const fin=S.played.includes(w),showP=!fin&&S.played.length>0;if(showP)teamModel();
- const liveW=S.live&&S.state&&S.state.week===w&&!fin,pairs=Object.values(g).filter(p=>p.length==2);
- const proj=(x,t)=>{const base=t.base??t.rs;if(liveW&&x.points>0){const p=pendFrac(x);return{v:x.points+base*p,p}}return{v:base,p:1}};
- return sel+(showP?'<p class="note">Projections blend each team’s recent form with its current lineup strength. For games in progress they add the points scored so far to an estimate for players still to play.</p>':"")+`<div class="fx" style="--cd:${cols(pairs.length,2)}">${pairs.map(([a,b])=>{
-  const A=S.by[a.roster_id],B=S.by[b.roster_id],pA=showP?proj(a,A):null,pB=showP?proj(b,B):null;let pa=.5;
-  if(showP)pa=cdf((pA.v-pB.v)/(Math.sqrt((A.sg*A.sg+B.sg*B.sg)*Math.max(.1,(pA.p+pB.p)/2))||1));else if(fin)pa=a.points>b.points?1:a.points<b.points?0:.5;
-  const row=(x,t,k,p)=>{const started=x.points>0,big=showP&&!started?p.v:x.points;return`<div class="mr c${k}">${nm(t)}<span class="pt"><span class="num${fin&&x.points>(k?a:b).points?" win":""}">${f1(big)}</span>${showP?`<small>${started?"proj "+f1(p.v):"projected"}</small>`:""}</span></div>`};
-  return`<div class="card mc">${row(a,A,0,pA)}${row(b,B,1,pB)}${showP?`<div class="prob"><i style="width:${pa*100}%"></i><i style="width:${100-pa*100}%"></i></div><div class="pl"><span>${(pa*100).toFixed(0)}% win chance</span><span>${(100-pa*100).toFixed(0)}%</span></div>`:""}</div>`}).join("")||'<div class="msg">No matchups for this week.</div>'}</div>`}
+ const fin=S.played.includes(w),showP=!fin;if(showP&&S.played.length)teamModel();
+ const key=S.L.league_id+":"+w,P=showP?PJ[key]:null;if(showP&&!P)loadProj(w);
+ const ok=!!P&&P.state==="ok",liveW=S.live&&S.state&&S.state.week===w&&!fin,pairs=Object.values(g).filter(p=>p.length==2);
+ const side=(x,t)=>{const started=x.points>0,p=!showP?null:ok?sleeperTeamProj(x,t,P):(S.played.length?(t.base??t.rs):null),pend=liveW&&started?pendFrac(x):1;
+  return{x,t,p,started,pend,eff:p==null?null:(liveW&&started?x.points+p*pend:p)}};
+ const note=!showP?"":ok?"Projections are Sleeper’s own player projections, scored with your league’s settings and added up for each team’s starters. Win chance also counts points already scored.":(!P||P.state==="loading")?"Loading Sleeper’s projections… showing estimates from recent form for now.":"Sleeper’s projections couldn’t be loaded, so these are estimates based on recent form and lineup strength.";
+ return sel+(note?`<p class="note">${note}</p>`:"")+`<div class="fx" style="--cd:${cols(pairs.length,2)}">${pairs.map(([a,b])=>{
+  const A=side(a,S.by[a.roster_id]),B=side(b,S.by[b.roster_id]);let pa=.5;const hasP=A.p!=null&&B.p!=null;
+  if(hasP)pa=cdf((A.eff-B.eff)/(Math.sqrt(((A.t.sg||20)**2+(B.t.sg||20)**2)*Math.max(.1,(A.pend+B.pend)/2))||1));else if(fin)pa=a.points>b.points?1:a.points<b.points?0:.5;
+  const row=(q,k)=>{const big=showP&&!q.started&&q.p!=null?q.p:q.x.points;return`<div class="mr c${k}">${nm(q.t)}<span class="pt"><span class="num${fin&&q.x.points>(k?a:b).points?" win":""}">${f1(big)}</span>${q.p!=null?`<small>${q.started?(ok?"proj ":"est. ")+f1(q.p):ok?"projected":"estimate"}</small>`:""}</span></div>`};
+  return`<div class="card mc">${row(A,0)}${row(B,1)}${hasP?`<div class="prob"><i style="width:${pa*100}%"></i><i style="width:${100-pa*100}%"></i></div><div class="pl"><span>${(pa*100).toFixed(0)}% win chance</span><span>${(100-pa*100).toFixed(0)}%</span></div>`:""}</div>`}).join("")||'<div class="msg">No matchups for this week.</div>'}</div>`}
 
 </script>
 </body>
