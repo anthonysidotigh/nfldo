@@ -156,7 +156,7 @@ h1,h2,h3,h4,.sh,.sub,.lab,.kick{text-wrap:balance}p,.note,.msg,.es{text-wrap:pre
 .fx>*{flex:1 1 calc((100% - (var(--c) - 1) * var(--g)) / var(--c) - .5px);min-width:0;margin:0}
 .fx.snap{margin-bottom:28px}
 .card.mc{display:flex;flex-direction:column;justify-content:center}
-@media (max-width:700px){.fx{--c:1}.fx.snap{margin-bottom:22px}}
+@media (max-width:700px){.fx{--c:var(--cm,1)}.fx.snap{margin-bottom:22px}}
 
 .hh{font:700 24px "Barlow Condensed";margin:6px 0 12px}.hc .ht{display:flex;gap:8px;align-items:center}.hc .ht h3{margin:0;font-size:15px;color:var(--mute);font-weight:600}.he{font-size:22px}
 .hc .hb{font:700 38px/1.05 "Barlow Condensed";margin:8px 0 6px;white-space:nowrap}.hc.g{border-color:#2de2e655}.hc.g .hb{color:var(--flag)}.hc.s{border-color:#ff9db04d}.hc.s .hb{color:var(--bad)}
@@ -175,6 +175,38 @@ h1,h2,h3,h4,.sh,.sub,.lab,.kick{text-wrap:balance}p,.note,.msg,.es{text-wrap:pre
 .tl{font:700 12px Barlow;letter-spacing:.1em;text-transform:uppercase;color:#8fa6d1}.tb{font:700 40px/1 "Barlow Condensed";color:var(--flag);margin-top:auto}.ts{font-size:12px;color:var(--mute);margin-top:-5px}
 @media (max-width:1000px){.hero{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:700px){.hero{padding:18px;gap:14px;margin-bottom:24px}.tiles{display:flex;overflow-x:auto;gap:10px;scroll-snap-type:x mandatory;scroll-padding:0 4px;margin:0 -18px;padding:0 18px 4px}.tile{flex:0 0 76%;scroll-snap-align:start}}
+
+/* compact pass */
+[hidden]{display:none!important}
+body{font-size:14px;line-height:1.45}
+.layout{padding:14px;gap:16px}section{margin-bottom:20px}.sh{font-size:24px;margin:0 0 8px;padding-left:10px}.kick{font-size:11px}
+.card{padding:12px!important;border-radius:10px!important;margin-bottom:10px}.fx{--g:10px;margin-bottom:10px}
+th,td{padding:6px 8px}th{font-size:12px}.rank{font-size:20px;width:32px}.chip{font-size:11px;padding:0 7px}
+.av{width:26px;height:26px;font-size:12px}.who{gap:7px}.wt small{font-size:11px}.who.sm .av{width:16px;height:16px;font-size:9px}
+header{padding:12px 16px 0}.logo{width:64px;height:64px;border-radius:16px}.brand{gap:12px}.brand h1{font-size:clamp(24px,6.2vw,38px)}.brand .sub{font-size:13px!important}
+.tab{padding:9px 11px!important;font-size:13px}.years button{padding:5px 13px;font-size:13px;min-height:34px}
+.hero{padding:16px;gap:16px;margin-bottom:20px;border-radius:14px}.hbig{font-size:clamp(40px,5vw,58px)}.hsub{font-size:13px}.tile{padding:11px;gap:5px}.tb{font-size:30px}.tl{font-size:11px}
+.mr{padding:5px 8px;margin-bottom:5px}.mr .num{font-size:24px}.pt{display:flex;flex-direction:column;align-items:flex-end;line-height:1}.pt small{font-size:11px;color:var(--mute);margin-top:2px;white-space:nowrap}
+.pl{font-size:11.5px}.note{font-size:12px;margin-bottom:8px}.msg{padding:18px}
+.stat h3{font-size:12px}.stat .num{font-size:24px}.stat p{font-size:12px}.stat .sv{margin:5px 0 3px}
+.hh{font-size:19px;margin:4px 0 8px}.hc{padding:10px!important}.hc .ht{gap:6px}.hc .ht h3{font-size:12px}.he{font-size:17px}.hc .hb{font-size:28px;margin:5px 0 3px}.hc .hw{margin:2px 0}.hc .hl{font-size:12px;margin-top:6px;line-height:1.4}
+.rcard{padding:12px 14px}.rcard .big{font-size:40px}.rs{font-size:22px}.recap{margin-bottom:16px}
+.bth{font-size:20px;margin-bottom:8px}.bt{padding:6px 8px}.bt .sc{font-size:19px}.res{min-height:110px;padding:12px}.res .big{font-size:36px}.or{padding:4px 0}
+.ev{padding:8px 4px}.es{font-size:12px}.fh{padding:10px 14px 8px}.fh h2{font-size:19px}
+@media (max-width:700px){
+ body{font-size:13px}.layout{padding:10px;gap:12px}section{margin-bottom:16px}.sh{font-size:21px}
+ .card{padding:10px!important}.fx{--g:8px}
+ header{padding:10px 12px 0}.logo{width:52px;height:52px;border-radius:14px}.brand h1{font-size:clamp(22px,7vw,30px)}.brand .sub{font-size:12px!important}
+ .top{gap:6px}.years{margin-bottom:8px}.years button{padding:4px 12px;font-size:12.5px;min-height:32px}.tab{padding:8px 10px!important;font-size:12.5px}
+ .hero{padding:12px;gap:10px;margin-bottom:14px}.hbig{font-size:42px}.hsub{font-size:12px}.chip2{font-size:11px;padding:3px 9px}.hchips{margin-top:6px}
+ .tiles{margin:0 -12px;padding:0 12px 4px}.tile{flex:0 0 70%;padding:10px}.tb{font-size:28px}
+ .av{width:24px;height:24px;font-size:11px}.rank{font-size:18px;width:28px}th,td{padding:5px 6px}
+ .mr .num{font-size:22px}.hc .hb{font-size:22px}.hc{padding:8px!important}.hc .hl{font-size:11.5px}.hc .ht h3{font-size:11px;line-height:1.25}.hc .who .av{width:22px;height:22px}
+ .stat .num{font-size:21px}.stat{padding:8px!important}.stat h3{font-size:11px}.stat p{font-size:11.5px}.hh{font-size:17px}
+ .rcard{padding:10px 12px;gap:10px}.rcard .big{font-size:32px}.rs{font-size:20px}.bth{font-size:18px}
+}
+.hc .ph{width:28px;height:28px;font-size:12px}
+@media (max-width:700px){.hc .ph{width:24px;height:24px}}
 </style>
 </head>
 <body>
@@ -294,12 +326,15 @@ async function renderPage(){const L0=S.L;
   br=P("brackets",done?"Playoff results":"Brackets",done?"Playoff &amp; Poo Bowl results":"Playoff &amp; Poo Bowl brackets",'<div id="br"><div class="msg">Loading…</div></div>',done?"Final results":"League race"),
   ins=P("insights","Insights","Insights",insights(),"The numbers"),
   hall=P("hall","Hall of Fame","Hall of Fame &amp; Shame",'<div id="hf"><div class="msg">Loading…</div></div>',"The banter");
- const order=done?[br,st,pw,mu,hall,ins]:[mu,st,pw,ol,br,hall,ins];
+ const tabs=done?[["st","Standings"],["pw","Power rankings"]]:[["st","Standings"],["pw","Power rankings"],["ol","Playoff odds"]];
+ const tb=P("tables","Tables","League tables",`<div class="years tabs" id="tt" role="tablist" aria-label="Tables">${tabs.map(([k,n],i)=>`<button type="button" role="tab" data-t="${k}" aria-pressed="${i==0}">${n}</button>`).join("")}</div><div id="p-st">${standings()}</div><div id="pw" hidden></div>${done?"":'<div id="ol" hidden><div class="msg">Running 20,000 season simulations…</div></div>'}`,"League race");
+ const order=done?[br,tb,mu,hall,ins]:[mu,tb,br,hall,ins];
  app.innerHTML='<div id="rc"></div><div id="sn"></div>'+order.map(x=>x.html).join("");
+ $("#tt").onclick=e=>{const b=e.target.closest("button");if(!b)return;$("#tt").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));["st","pw","ol"].forEach(k=>{const el=$(k=="st"?"#p-st":"#"+k);if(el)el.hidden=k!==b.dataset.t})};
  $("#jump").innerHTML=order.map(x=>`<a class="tab" href="#${x.id}">${x.nav}</a>`).join("");
  if(done)loadActual();
  startLive();drawSnapshot();drawPower();drawMatchups();loadDraft().then(drawPower);
- try{await players();drawPower();drawSnapshot();drawHall();if(S.L===L0){buildIdx();startEspn()}drawFeed()}catch(e){}
+ try{await players();drawPower();drawSnapshot();drawHall();drawMatchups();if(S.L===L0){buildIdx();startEspn()}drawFeed()}catch(e){}
  if(!done)setTimeout(()=>{drawOutlook();drawBracket()},0)}
 function drawMatchups(){$("#mu").innerHTML=matchups();const w=$("#wsel");if(w)w.onchange=()=>{S.cur=+w.value;drawMatchups()}}
 
@@ -374,7 +409,7 @@ function stateKey(){const w=S.live&&S.state?S.state.week:0,lw=(w&&S.wk[w-1])||[]
  return S.T.map(t=>[t.id,t.w,t.l,t.t,Math.round(t.pf*10),Math.round((t.rs||0)*10),Math.round((t.lineup||0)*10),Math.round((cur[t.id]||0)*10)].join(":")).join("|")+"#"+S.played.length}
 function teamModel(){computePower();const T=S.T,lg=avg(T.map(t=>t.rs)),la=PL?avg(T.map(t=>t.lineup||0)):0,sdl=avg(T.filter(t=>t.sc.length>1).map(t=>t.sd))||20;
  const wn=S.live&&S.state?S.state.week:0,lw=wn&&!S.played.includes(wn)?(S.wk[wn-1]||[]):[];
- T.forEach(t=>{let mu=la?.5*t.rs+.5*t.lineup*lg/la:t.rs;const x=lw.find(y=>y.roster_id==t.id);
+ T.forEach(t=>{let mu=la?.5*t.rs+.5*t.lineup*lg/la:t.rs;t.base=mu;const x=lw.find(y=>y.roster_id==t.id);
   if(x&&x.points>0){const st=x.starters||[],pp=x.players_points||{},pend=st.length?st.filter(id=>!(pp[id]>0)).length/st.length:0;mu=.75*mu+.25*(x.points+mu*pend)}
   t.mu=mu;t.sg=Math.sqrt((4*sdl*sdl+t.sc.length*t.sd*t.sd)/(4+t.sc.length))})}
 function bGame(a,b){const x=Math.max(0,a.mu+a.sg*gauss()),y=Math.max(0,b.mu+b.sg*gauss());return x>=y?{a,b,sa:x,sb:y,w:a,l:b}:{a,b,sa:x,sb:y,w:b,l:a}}
@@ -491,7 +526,7 @@ function drawHall(){const el=$("#hf");if(!el)return;
  if(lStr&&streak(res[lStr.id],"L")>=3)X.push(hc("s","📉","Longest losing streak",streak(res[lStr.id],"L")+" in a row",nm(lStr),"Is the app even installed?"));
  if(fewest&&fewest!==most)X.push(hc("s","🕸️","Cobwebs on the roster",(fewest.roster.settings.total_moves||0)+((fewest.roster.settings.total_moves||0)==1?" move":" moves"),nm(fewest),"Set the roster in August and left it to rot. Not a single pickup since."));
  if(wkLow&&wkLow!==wkTop)X.push(hc("s","🚒","Week "+lw+" dumpster fire",f1(wkLow.points)+" pts",nm(S.by[wkLow.roster_id]),"Lowest score of the latest week. Someone call the fire brigade."));
- const grid=a=>`<div class="fx" style="--cd:${cols(a.length,2)}">${a.join("")}</div>`;
+ const grid=a=>`<div class="fx" style="--cd:${cols(a.length,3)};--cm:2">${a.join("")}</div>`;
  el.innerHTML=`<h3 class="hh">🏆 The glazing corner</h3>${grid(G)}<h3 class="hh">🚽 The wall of shame</h3>${grid(X)}<p class="note">All of this is judged on your league’s own scoring, finished weeks only. It is meant in good fun, so keep the group chat friendly.</p>`}
 function tiers(R,key){const k=R.length>=8?3:2,g=R.slice(1).map((t,i)=>[R[i][key]-t[key],i]).sort((a,b)=>b[0]-a[0]).slice(0,k).map(x=>x[1]);let tr=1;return R.map((t,i)=>{const x=tr;if(g.includes(i))tr++;return x})}
 const mv=d=>d>0?`<span class="pos">▲${d}</span>`:d<0?`<span class="neg">▼${-d}</span>`:"–";
@@ -514,7 +549,7 @@ function insights(){if(S.played.length<2)return'<div class="msg">Insights need a
  const c=(h,big,sub,s)=>`<div class="card stat"><h3>${h}</h3>${big}<p>${sub} ${s||""}</p></div>`,tm=t=>`<div class="sv">${nm(t)}</div>`,pts=v=>`<div class="num">${v}</div>`;
  const lk=by("luck"),ul=by("luck",-1),co=by("sd",-1),bb=by("sd");
  const ordered=[...T].sort((a,b)=>b.luck-a.luck),m=Math.max(...T.map(t=>Math.abs(t.luck)),1);
- return`<div class="fx" style="--cd:${cols(close?7:6,4)}">
+ return`<div class="fx" style="--cd:${cols(close?7:6,4)};--cm:2">
  ${c("Luckiest team",tm(lk),`${lk.luck>0?"+":""}${lk.luck.toFixed(1)} wins`,"above what their scoring earned")}
  ${c("Unluckiest team",tm(ul),`${ul.luck.toFixed(1)} wins`,"below what their scoring earned")}
  ${c("Most consistent",tm(co),"±"+f1(co.sd),"weekly swing")}
@@ -528,12 +563,17 @@ function insights(){if(S.played.length<2)return'<div class="msg">Insights need a
 function standings(){const r=[...S.T].sort((a,b)=>(b.w+b.t/2)-(a.w+a.t/2)||b.pf-a.pf);
  return`<div class="card scroll"><table><tr><th>#</th><th>Team</th><th>W-L</th><th>PF</th><th>PA</th><th>Diff</th><th>Exp. wins</th><th>Luck</th></tr>${r.map((t,i)=>`<tr><td class="rank num">${i+1}</td><td class="team">${nm(t)}</td><td>${t.w}-${t.l}${t.t?"-"+t.t:""}</td><td>${f1(t.pf)}</td><td>${f1(t.pa)}</td><td class="${t.pf>=t.pa?"pos":"neg"}">${t.pf>=t.pa?"+":""}${f1(t.pf-t.pa)}</td><td>${t.xw.toFixed(1)}</td><td class="${t.luck>=0?"pos":"neg"}">${t.luck>0?"+":""}${t.luck.toFixed(1)}</td></tr>`).join("")}</table></div>`}
 
+function pendFrac(x){const st=(x.starters||[]).filter(id=>id&&id!=="0"),pp=x.players_points||{};return st.length?st.filter(id=>!(pp[id]>0)).length/st.length:1}
 function matchups(){const w=S.cur,m=S.wk[w-1]||[],g={};m.forEach(x=>(g[x.matchup_id]??=[]).push(x));
- const sel=`<select id="wsel" aria-label="Week" style="margin-bottom:12px">${S.wk.map((_,i)=>`<option value="${i+1}" ${i+1==w?"selected":""}>Week ${i+1}</option>`).join("")}</select>`;
- const live=!S.played.includes(w);
- return sel+(live?'<p class="note">This week hasn’t finished, so win chances come from each team’s scoring average and consistency.</p>':"")+`<div class="fx" style="--cd:${cols(Object.values(g).filter(p=>p.length==2).length,2)}">${Object.values(g).filter(p=>p.length==2).map(([a,b])=>{
-  const A=S.by[a.roster_id],B=S.by[b.roster_id];let pa=cdf((A.avg-B.avg)/(Math.sqrt(A.sd**2+B.sd**2)||1));if(!live)pa=a.points>b.points?1:a.points<b.points?0:.5;
-  return`<div class="card mc">${[[a,A],[b,B]].map(([x,t],k)=>`<div class="mr c${k}">${nm(t)}<span class="num${!live&&x.points>(k?a:b).points?" win":""}">${f1(x.points)}</span></div>`).join("")}${live?`<div class="prob"><i style="width:${pa*100}%"></i><i style="width:${100-pa*100}%"></i></div><div class="pl"><span>${(pa*100).toFixed(0)}% win chance</span><span>${(100-pa*100).toFixed(0)}%</span></div>`:""}</div>`}).join("")||'<div class="msg">No matchups for this week.</div>'}</div>`}
+ const sel=`<select id="wsel" aria-label="Week" style="margin-bottom:10px">${S.wk.map((_,i)=>`<option value="${i+1}" ${i+1==w?"selected":""}>Week ${i+1}</option>`).join("")}</select>`;
+ const fin=S.played.includes(w),showP=!fin&&S.played.length>0;if(showP)teamModel();
+ const liveW=S.live&&S.state&&S.state.week===w&&!fin,pairs=Object.values(g).filter(p=>p.length==2);
+ const proj=(x,t)=>{const base=t.base??t.rs;if(liveW&&x.points>0){const p=pendFrac(x);return{v:x.points+base*p,p}}return{v:base,p:1}};
+ return sel+(showP?'<p class="note">Projections blend each team’s recent form with its current lineup strength. For games in progress they add the points scored so far to an estimate for players still to play.</p>':"")+`<div class="fx" style="--cd:${cols(pairs.length,2)}">${pairs.map(([a,b])=>{
+  const A=S.by[a.roster_id],B=S.by[b.roster_id],pA=showP?proj(a,A):null,pB=showP?proj(b,B):null;let pa=.5;
+  if(showP)pa=cdf((pA.v-pB.v)/(Math.sqrt((A.sg*A.sg+B.sg*B.sg)*Math.max(.1,(pA.p+pB.p)/2))||1));else if(fin)pa=a.points>b.points?1:a.points<b.points?0:.5;
+  const row=(x,t,k,p)=>{const started=x.points>0,big=showP&&!started?p.v:x.points;return`<div class="mr c${k}">${nm(t)}<span class="pt"><span class="num${fin&&x.points>(k?a:b).points?" win":""}">${f1(big)}</span>${showP?`<small>${started?"proj "+f1(p.v):"projected"}</small>`:""}</span></div>`};
+  return`<div class="card mc">${row(a,A,0,pA)}${row(b,B,1,pB)}${showP?`<div class="prob"><i style="width:${pa*100}%"></i><i style="width:${100-pa*100}%"></i></div><div class="pl"><span>${(pa*100).toFixed(0)}% win chance</span><span>${(100-pa*100).toFixed(0)}%</span></div>`:""}</div>`}).join("")||'<div class="msg">No matchups for this week.</div>'}</div>`}
 
 </script>
 </body>
