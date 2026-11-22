@@ -311,13 +311,13 @@ html::-webkit-scrollbar{width:10px}html::-webkit-scrollbar-track{background:#0a1
  .card.scroll{background:none!important;border:0!important;box-shadow:none!important;padding:0!important}
  .scroll table,.scroll tbody{display:block;min-width:0;width:100%;border:0}
  .scroll tr.thead{display:none}
- .scroll tr{display:grid;grid-template-columns:repeat(auto-fit,minmax(66px,1fr));gap:9px 8px;position:relative;margin:0 0 8px;padding:11px 12px 11px 50px;border:1px solid var(--line);border-radius:12px;background:linear-gradient(180deg,#152651,#0f1c3d);box-shadow:inset 0 1px 0 #ffffff0d,0 6px 14px #02081a55}
- .scroll td{display:block;padding:0;border:0;text-align:left;white-space:normal;min-width:0;font-size:14px;line-height:1.25}
- .scroll td:nth-child(1){position:absolute;left:13px;top:11px;width:28px;text-align:center}
- .scroll td:nth-child(2){grid-column:1/-1;padding-bottom:7px;border-bottom:1px solid var(--line);margin-bottom:1px}
- .scroll td:nth-child(n+3)::before{content:attr(data-l);display:block;margin-bottom:2px;font:600 10px/1.15 Barlow;letter-spacing:.07em;text-transform:uppercase;color:var(--mute)}
+ .scroll tr{display:grid;grid-template-columns:repeat(var(--n,4),minmax(0,1fr));gap:6px 6px;position:relative;margin:0 0 6px;padding:8px 10px 9px 34px;border:1px solid var(--line);border-radius:11px;background:linear-gradient(180deg,#152651,#0f1c3d);box-shadow:inset 0 1px 0 #ffffff0d,0 4px 10px #02081a44}
+ .scroll td{display:block;padding:0;border:0;text-align:left;white-space:nowrap;min-width:0;font-size:13.5px;line-height:1.2;font-variant-numeric:tabular-nums}
+ .scroll td:nth-child(1){position:absolute;left:6px;top:9px;width:22px;text-align:center;font-size:13px}
+ .scroll td:nth-child(2){grid-column:1/-1;padding-bottom:5px;border-bottom:1px solid var(--line);white-space:normal}
+ .scroll td:nth-child(n+3)::before{content:attr(data-l);display:block;margin-bottom:1px;font:600 9px/1.1 Barlow;letter-spacing:.05em;overflow:hidden;text-overflow:ellipsis;text-transform:uppercase;color:var(--mute)}
  .scroll td .bar{display:block!important;width:100%!important;min-width:0!important;margin:5px 0 0!important}
- .scroll tr{align-items:end}
+ .scroll tr{align-items:start}
  .card.scroll.chart{background:linear-gradient(180deg,#152651,#0f1c3d)!important;border:1px solid var(--line)!important;padding:14px!important;border-radius:14px!important;overflow:hidden}
  .chart .dr .dt{margin:0 42px}
  .scroll td:nth-child(2){align-self:start}
@@ -503,9 +503,10 @@ async function renderPage(){const L0=S.L;
  if(!done)setTimeout(()=>{drawOutlook();drawBracket()},0)}
 function drawMatchups(){$("#mu").innerHTML=matchups();const w=$("#wsel");if(w)w.onchange=()=>{S.cur=+w.value;drawMatchups()}}
 
-const TLAB={"🏆":"Titles","🚽":"Toilet bowls"};
-function labelTables(root){(root||document).querySelectorAll("table:not([data-l])").forEach(t=>{t.dataset.l="1";const rows=[...t.rows],hr=rows.find(r=>r.querySelector("th"));if(!hr)return;hr.classList.add("thead");
- const lab=[...hr.cells].map(c=>{const x=c.textContent.trim();return TLAB[x]||x});rows.forEach(r=>{if(r!==hr)[...r.cells].forEach((c,i)=>{c.dataset.l=lab[i]||""})})})}
+const TLAB={"🏆":"Titles","🚽":"Toilets","Exp. wins":"xWins","Recent form":"Form","Lineup pts":"Lineup","Toilet bowls":"Toilets","Playoff odds":"Odds","Proj. wins":"Proj W","Win %":"Win%","Seasons":"Szns","Playoffs":"Playoffs"};
+const shortL=x=>TLAB[x]||x.replace(/^If (win|lose) wk \d+$/i,"If $1");
+function labelTables(root){(root||document).querySelectorAll("table:not([data-l])").forEach(t=>{t.dataset.l="1";const rows=[...t.rows],hr=rows.find(r=>r.querySelector("th"));if(!hr)return;hr.classList.add("thead");{const n=hr.cells.length-2;t.style.setProperty("--n",n>6?4:Math.max(n,1))}
+ const lab=[...hr.cells].map(c=>{const x=c.textContent.trim();return shortL(x)});rows.forEach(r=>{if(r!==hr)[...r.cells].forEach((c,i)=>{c.dataset.l=lab[i]||""})})})}
 new MutationObserver(()=>labelTables(app)).observe(app,{childList:true,subtree:true});
 const DEFAULT_LEAGUE="1375130186369994752";
 (async()=>{busy("Loading the NFLDO league…");
