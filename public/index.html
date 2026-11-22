@@ -305,23 +305,30 @@ html::-webkit-scrollbar{width:10px}html::-webkit-scrollbar-track{background:#0a1
 /* no blank line under the engraved name: text stacks tight and sits centred on the plate */
 .tplate span{min-height:0!important}.tplate small{margin-top:2px}
 
-/* phones: each table row becomes a card, so nothing needs swiping sideways */
+/* phones: keep a real table, but fit it to the screen by dropping low-value columns and tightening everything */
 @media (max-width:700px){
  .scroll{overflow:visible}
- .card.scroll{background:none!important;border:0!important;box-shadow:none!important;padding:0!important}
- .scroll table,.scroll tbody{display:block;min-width:0;width:100%;border:0}
- .scroll tr.thead{display:none}
- .scroll tr{display:grid;grid-template-columns:repeat(var(--n,4),minmax(0,1fr));gap:6px 6px;position:relative;margin:0 0 6px;padding:8px 10px 9px 34px;border:1px solid var(--line);border-radius:11px;background:linear-gradient(180deg,#152651,#0f1c3d);box-shadow:inset 0 1px 0 #ffffff0d,0 4px 10px #02081a44}
- .scroll td{display:block;padding:0;border:0;text-align:left;white-space:nowrap;min-width:0;font-size:13.5px;line-height:1.2;font-variant-numeric:tabular-nums}
- .scroll td:nth-child(1){position:absolute;left:6px;top:9px;width:22px;text-align:center;font-size:13px}
- .scroll td:nth-child(2){grid-column:1/-1;padding-bottom:5px;border-bottom:1px solid var(--line);white-space:normal}
- .scroll td:nth-child(n+3)::before{content:attr(data-l);display:block;margin-bottom:1px;font:600 9px/1.1 Barlow;letter-spacing:.05em;overflow:hidden;text-overflow:ellipsis;text-transform:uppercase;color:var(--mute)}
- .scroll td .bar{display:block!important;width:100%!important;min-width:0!important;margin:5px 0 0!important}
- .scroll tr{align-items:start}
+ .card.scroll:not(.chart){padding:4px 8px!important}
+ .scroll table{width:100%;min-width:0;table-layout:fixed;border-collapse:collapse}
+ .scroll th,.scroll td{padding:7px 3px;font-size:12px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+ .scroll th{font-size:9px;letter-spacing:.03em;padding:6px 3px;text-align:left}
+ .scroll th:nth-child(1),.scroll td:nth-child(1){width:22px;padding-left:2px;padding-right:0;text-align:center}
+ .scroll th:nth-child(2),.scroll td:nth-child(2){width:var(--tw,36%);padding-left:5px}
+ .scroll [data-h]{display:none}
+ .scroll th:nth-child(n+3),.scroll td:nth-child(n+3){text-align:right;padding-right:6px}
+ .scroll th[data-s]{font-size:0}.scroll th[data-s]::after{content:attr(data-s);font-size:9px}
+ .scroll td .bar{margin-left:auto!important}
+ .scroll td:nth-child(2) .who{display:flex;align-items:center;gap:5px;min-width:0}
+ .scroll td:nth-child(2) .chip{display:inline-block;margin:2px 0 0 27px;padding:0 6px;font-size:9px;line-height:15px}
+ .scroll td:nth-child(n+3){overflow:visible;text-overflow:clip}
+ .scroll [data-w]{width:24px}
+ .scroll td:nth-child(2) .av{width:22px;height:22px;flex:none;font-size:11px}
+ .scroll td:nth-child(2) .wt{display:block;min-width:0;overflow:hidden}
+ .scroll td:nth-child(2) .wt b{display:block;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .scroll td:nth-child(2) .wt small{display:block;font-size:9.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .scroll td .bar{display:block!important;width:100%!important;min-width:0!important;margin:3px 0 2px!important}
  .card.scroll.chart{background:linear-gradient(180deg,#152651,#0f1c3d)!important;border:1px solid var(--line)!important;padding:14px!important;border-radius:14px!important;overflow:hidden}
  .chart .dr .dt{margin:0 42px}
- .scroll td:nth-child(2){align-self:start}
- .scroll td:nth-child(n+3) small{display:inline}
 }
 </style>
 </head>
@@ -503,10 +510,13 @@ async function renderPage(){const L0=S.L;
  if(!done)setTimeout(()=>{drawOutlook();drawBracket()},0)}
 function drawMatchups(){$("#mu").innerHTML=matchups();const w=$("#wsel");if(w)w.onchange=()=>{S.cur=+w.value;drawMatchups()}}
 
-const TLAB={"🏆":"Titles","🚽":"Toilets","Exp. wins":"xWins","Recent form":"Form","Lineup pts":"Lineup","Toilet bowls":"Toilets","Playoff odds":"Odds","Proj. wins":"Proj W","Win %":"Win%","Seasons":"Szns","Playoffs":"Playoffs"};
-const shortL=x=>TLAB[x]||x.replace(/^If (win|lose) wk \d+$/i,"If $1");
-function labelTables(root){(root||document).querySelectorAll("table:not([data-l])").forEach(t=>{t.dataset.l="1";const rows=[...t.rows],hr=rows.find(r=>r.querySelector("th"));if(!hr)return;hr.classList.add("thead");{const n=hr.cells.length-2;t.style.setProperty("--n",n>6?4:Math.max(n,1))}
- const lab=[...hr.cells].map(c=>{const x=c.textContent.trim();return shortL(x)});rows.forEach(r=>{if(r!==hr)[...r.cells].forEach((c,i)=>{c.dataset.l=lab[i]||""})})})}
+const MHIDE=new Set(["PA","Exp. wins","Lineup pts","Proj. wins","Seasons","Playoffs"]);
+function labelTables(root){(root||document).querySelectorAll("table:not([data-l])").forEach(t=>{t.dataset.l="1";const rows=[...t.rows],hr=rows.find(r=>r.querySelector("th"));if(!hr)return;
+ const lab=[...hr.cells].map(c=>c.textContent.trim()),hide=lab.map((x,i)=>i>1&&MHIDE.has(x));
+ rows.forEach(r=>[...r.cells].forEach((c,i)=>{if(hide[i])c.dataset.h="1"}));
+ [...hr.cells].forEach((c,i)=>{const m=lab[i].match(/^If (win|lose)/i);const o={"Playoff odds":"Odds","Expected wins":"xWins","Recent form":"Form","Toilet bowls":"🚽"}[lab[i]];const v=m?"If "+(m[1]=="win"?"W":"L"):o;if(v)c.dataset.s=v});
+ [...hr.cells].forEach((c,i)=>{if(/^(🏆|🚽)$/.test(lab[i]))rows.forEach(r=>{if(r.cells[i])r.cells[i].dataset.w="1"})});
+ const vis=lab.length-2-hide.filter(Boolean).length;t.style.setProperty("--tw",vis>=5?"31%":"37%")})}
 new MutationObserver(()=>labelTables(app)).observe(app,{childList:true,subtree:true});
 const DEFAULT_LEAGUE="1375130186369994752";
 (async()=>{busy("Loading the NFLDO league…");
