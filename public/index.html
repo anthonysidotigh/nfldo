@@ -304,6 +304,25 @@ html::-webkit-scrollbar{width:10px}html::-webkit-scrollbar-track{background:#0a1
 @media (max-width:700px){.tcup{width:112px;height:164px}.tbase{width:112px;height:80px}.tsvg{width:88px;height:82px}}
 /* no blank line under the engraved name: text stacks tight and sits centred on the plate */
 .tplate span{min-height:0!important}.tplate small{margin-top:2px}
+
+/* phones: each table row becomes a card, so nothing needs swiping sideways */
+@media (max-width:700px){
+ .scroll{overflow:visible}
+ .card.scroll{background:none!important;border:0!important;box-shadow:none!important;padding:0!important}
+ .scroll table,.scroll tbody{display:block;min-width:0;width:100%;border:0}
+ .scroll tr.thead{display:none}
+ .scroll tr{display:grid;grid-template-columns:repeat(auto-fit,minmax(66px,1fr));gap:9px 8px;position:relative;margin:0 0 8px;padding:11px 12px 11px 50px;border:1px solid var(--line);border-radius:12px;background:linear-gradient(180deg,#152651,#0f1c3d);box-shadow:inset 0 1px 0 #ffffff0d,0 6px 14px #02081a55}
+ .scroll td{display:block;padding:0;border:0;text-align:left;white-space:normal;min-width:0;font-size:14px;line-height:1.25}
+ .scroll td:nth-child(1){position:absolute;left:13px;top:11px;width:28px;text-align:center}
+ .scroll td:nth-child(2){grid-column:1/-1;padding-bottom:7px;border-bottom:1px solid var(--line);margin-bottom:1px}
+ .scroll td:nth-child(n+3)::before{content:attr(data-l);display:block;margin-bottom:2px;font:600 10px/1.15 Barlow;letter-spacing:.07em;text-transform:uppercase;color:var(--mute)}
+ .scroll td .bar{display:block!important;width:100%!important;min-width:0!important;margin:5px 0 0!important}
+ .scroll tr{align-items:end}
+ .card.scroll.chart{background:linear-gradient(180deg,#152651,#0f1c3d)!important;border:1px solid var(--line)!important;padding:14px!important;border-radius:14px!important;overflow:hidden}
+ .chart .dr .dt{margin:0 42px}
+ .scroll td:nth-child(2){align-self:start}
+ .scroll td:nth-child(n+3) small{display:inline}
+}
 </style>
 </head>
 <body>
@@ -484,6 +503,10 @@ async function renderPage(){const L0=S.L;
  if(!done)setTimeout(()=>{drawOutlook();drawBracket()},0)}
 function drawMatchups(){$("#mu").innerHTML=matchups();const w=$("#wsel");if(w)w.onchange=()=>{S.cur=+w.value;drawMatchups()}}
 
+const TLAB={"🏆":"Titles","🚽":"Toilet bowls"};
+function labelTables(root){(root||document).querySelectorAll("table:not([data-l])").forEach(t=>{t.dataset.l="1";const rows=[...t.rows],hr=rows.find(r=>r.querySelector("th"));if(!hr)return;hr.classList.add("thead");
+ const lab=[...hr.cells].map(c=>{const x=c.textContent.trim();return TLAB[x]||x});rows.forEach(r=>{if(r!==hr)[...r.cells].forEach((c,i)=>{c.dataset.l=lab[i]||""})})})}
+new MutationObserver(()=>labelTables(app)).observe(app,{childList:true,subtree:true});
 const DEFAULT_LEAGUE="1375130186369994752";
 (async()=>{busy("Loading the NFLDO league…");
  try{const by={};let id=DEFAULT_LEAGUE;
@@ -545,7 +568,7 @@ function drawOutlook(){const el=$("#ol");if(!el)return;
  const row=t=>{const w=t.poW??t.poL,l=t.poL??t.poW,lo=Math.min(w,l)*100,hi=Math.max(w,l)*100;
   return`<div class="dr"><div><b class="num" style="font-size:20px">${rec(t)}</b> ${nm(t)}</div><div class="dt"><span class="seg" style="left:${lo}%;width:${hi-lo}%"></span><i class="dot l" style="left:${l*100}%"></i><i class="dot w" style="left:${w*100}%"></i><span class="lbl" style="left:${lo}%;transform:translate(calc(-100% - 12px),-50%)">${(lo).toFixed(1)}%</span><span class="lbl" style="left:${hi}%;transform:translate(12px,-50%)">${hi.toFixed(1)}%</span></div></div>`};
  el.innerHTML=`<div class="card scroll"><p class="note">${o.N.toLocaleString()} simulated seasons, ${o.weeks} week${o.weeks>1?"s":""} left. Top ${o.P} of ${T.length} teams make the playoffs.</p><table><tr><th>#</th><th>Team</th><th>Record</th><th>Playoff odds</th><th>Proj. wins</th><th>If win wk ${o.w1}</th><th>If lose wk ${o.w1}</th></tr>${A.map((t,i)=>`<tr><td class="rank num">${i+1}</td><td class="team">${nm(t)}</td><td>${rec(t)}</td><td><div class="bar" style="display:inline-block;width:80px;vertical-align:middle;margin-right:8px"><i style="width:${t.po*100}%"></i></div>${pc(t.po)}</td><td>${t.pfw.toFixed(1)}</td><td class="pos">${pc(t.poW)}</td><td class="neg">${pc(t.poL)}</td></tr>`).join("")}</table></div>
- <div class="card scroll"><h3 style="margin:0 0 2px;font-size:24px">Impact of week ${o.w1} on playoff chances</h3><p class="note">Record through ${S.played.length} weeks</p><div class="lg2"><span><i style="background:var(--flag)"></i>With week ${o.w1} win</span><span><i style="background:#3b7bff"></i>With week ${o.w1} loss</span></div>${B.map(row).join("")}<div class="dr"><div></div><div class="dt">${[0,25,50,75,100].map(v=>`<span class="ax" style="left:${v}%">${v}</span>`).join("")}</div></div><p class="note" style="margin:14px 0 0">Playoff probability (%). Each team’s score is simulated around a blend of recent form and current lineup strength, with seeding by wins, then points. Division winners and other tiebreakers aren’t modeled, so treat close calls as estimates.</p></div>`}
+ <div class="card scroll chart"><h3 style="margin:0 0 2px;font-size:24px">Impact of week ${o.w1} on playoff chances</h3><p class="note">Record through ${S.played.length} weeks</p><div class="lg2"><span><i style="background:var(--flag)"></i>With week ${o.w1} win</span><span><i style="background:#3b7bff"></i>With week ${o.w1} loss</span></div>${B.map(row).join("")}<div class="dr"><div></div><div class="dt">${[0,25,50,75,100].map(v=>`<span class="ax" style="left:${v}%">${v}</span>`).join("")}</div></div><p class="note" style="margin:14px 0 0">Playoff probability (%). Each team’s score is simulated around a blend of recent form and current lineup strength, with seeding by wins, then points. Division winners and other tiebreakers aren’t modeled, so treat close calls as estimates.</p></div>`}
 
 const BR={busy:false},RM=!!(window.matchMedia&&matchMedia("(prefers-reduced-motion:reduce)").matches);
 let RNG=Math.random;
