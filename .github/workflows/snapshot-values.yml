@@ -1,0 +1,47 @@
+name: Snapshot trade values
+
+# Saves Dynasty Dealer's PPR / 1QB redraft trade values once a day into public/values/,
+# so the site can grade each trade on the values from the day it happened.
+on:
+  schedule:
+    - cron: "0 16 * * *"   # daily, 16:00 UTC (3am Melbourne)
+  workflow_dispatch: {}     # lets you run it by hand from the Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Save today's values
+        run: |
+          node <<'JS'
+          const fs = require("fs");
+          (async () => {
+            const r = await fetch("https://www.dynastydealer.com/api/player-values?format=redraft&scoring=ppr");
+            if (!r.ok) throw new Error("Dynasty Dealer returned " + r.status);
+            const j = await r.json();
+            const v = {};
+            for (const p of j.players || []) {
+              const x = Number(p.current_value ?? p.base_value);
+              if (p.sleeper_id && Number.isFinite(x)) v[p.sleeper_id] = x;
+            }
+            if (Object.keys(v).length < 300) throw new Error("Too few players in response");
+            const t = Date.now(), d = new Date(t).toISOString().slice(0, 10);
+            fs.mkdirSync("public/values", { recursive: true });
+            fs.writeFileSync(`public/values/${d}.json`, JSON.stringify({ d, t, v }));
+            let idx = [];
+            try { idx = JSON.parse(fs.readFileSync("public/values/index.json", "utf8")); } catch (e) {}
+            idx = idx.filter((e) => e.d !== d).concat({ d, t }).sort((a, b) => a.t - b.t);
+            fs.writeFileSync("public/values/index.json", JSON.stringify(idx));
+            console.log("Saved", Object.keys(v).length, "values for", d);
+          })().catch((e) => { console.error(e); process.exit(1); });
+          JS
+      - name: Commit
+        run: |
+          git config user.name "values-bot"
+          git config user.email "values-bot@users.noreply.github.com"
+          git add public/values
+          git diff --cached --quiet || (git commit -m "Save trade values snapshot" && git push)
