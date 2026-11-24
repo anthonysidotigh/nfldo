@@ -155,6 +155,7 @@ h1,h2,h3,h4,.sh,.sub,.lab,.kick{text-wrap:balance}p,.note,.msg,.es{text-wrap:pre
 .fx{--g:12px;--c:var(--cd,2);display:flex;flex-wrap:wrap;gap:var(--g);margin-bottom:16px}
 .fx>*{flex:1 1 calc((100% - (var(--c) - 1) * var(--g)) / var(--c) - .5px);min-width:0;margin:0}
 .fx.snap{margin-bottom:28px}
+.tro{flex:none;font-size:18px;line-height:1;margin-left:auto;margin-right:-2px;align-self:center}
 .card.mc{display:flex;flex-direction:column;justify-content:center}
 @media (max-width:700px){.fx{--c:var(--cm,1)}.fx.snap{margin-bottom:22px}}
 
@@ -963,8 +964,11 @@ function matchups(){const w=S.cur,m=S.wk[w-1]||[],g={};m.forEach(x=>(g[x.matchup
  const fin=S.played.includes(w),showP=!fin,key=S.L.league_id+":"+w,P=showP?PJ[key]:null;if(showP&&!P)loadProj(w);
  const ok=!!P&&P.state==="ok",pairs=Object.values(g).filter(p=>p.length==2);
  const note=!showP?"":ok?"Projections are Sleeper’s own player projections, scored with your league’s settings. A starter whose game is over counts his actual points. Sleeper’s win percentage isn’t available outside the app, so it isn’t shown here.":(!P||P.state==="loading")?"Loading Sleeper’s projections…":"Sleeper’s projections couldn’t be loaded right now, so no projection is shown.";
- const row=(x,t,k,other)=>{const p=ok?sleeperTeamProj(x,t,P):null,started=x.points>0,big=showP&&!started&&p!=null?p:x.points;
-  return`<div class="mr c${k}">${nm(t)}<span class="pt"><span class="num${fin&&x.points>other.points?" win":""}${showP&&!started&&p!=null?" pj":""}">${f1(big)}</span>${p!=null?`<small>${started?"proj "+f1(p):"projected"}</small>`:""}</span></div>`};
+ const liveWk=w===LV.fw&&LV.loaded&&String(S.L.season)===String(S.state.season),
+  sideDone=x=>{const ids=(x.starters||[]).filter(id=>id&&id!=="0");return ids.length>0&&ids.every(id=>{const tm=PL&&PL[id]?PL[id].team:null;if(PL&&!PL[id])return false;return !tm||LV.gs[tm]==="post"||LV.gs[tm]==null})},
+  over=(x,o)=>fin||(liveWk&&!!PL&&Object.keys(LV.gs).length>0&&sideDone(x)&&sideDone(o)&&Object.values(LV.gs).some(v=>v==="post"));
+ const row=(x,t,k,other)=>{const fn=over(x,other);const p=ok?sleeperTeamProj(x,t,P):null,started=x.points>0,big=showP&&!started&&p!=null?p:x.points;
+  const wonIt=fn&&x.points>other.points;return`<div class="mr c${k}">${nm(t)}${wonIt?'<span class="tro" title="Won the matchup" aria-label="Winner">🏆</span>':""}<span class="pt"><span class="num${fn&&x.points>other.points?" win":""}${showP&&!started&&p!=null?" pj":""}">${f1(big)}</span>${p!=null?`<small>${started?"proj "+f1(p):"projected"}</small>`:""}</span></div>`};
  return sel+(note?`<p class="note">${note}</p>`:"")+`<div class="fx" style="--cd:${cols(pairs.length,2)}">${pairs.map(([a,b])=>`<div class="card mc">${row(a,S.by[a.roster_id],0,b)}${row(b,S.by[b.roster_id],1,a)}</div>`).join("")||'<div class="msg">No matchups for this week.</div>'}</div>`}
 </script>
 </body>
