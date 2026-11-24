@@ -959,7 +959,7 @@ async function loadProj(w){const L=S.L,key=L.league_id+":"+w;if(PJ[key])return;P
  if(S.L===L)drawMatchups()}
 function sleeperTeamProj(x,t,P){const ids=(x.starters||[]).filter(id=>id&&id!=="0"),slots=(S.L.roster_positions||[]).filter(z=>ELIG[z]).length,pp=x.players_points||{};
  if(ids.length<slots&&PL){const pool=(t.roster.players||[]).filter(id=>PL[id]).map(id=>({pos:PL[id].position,v:P.pts[id]||0}));return lineup(S.L.roster_positions,pool,0).tot}
- return ids.reduce((a,id)=>{const team=PL&&PL[id]?PL[id].team:null,st=team?LV.gs[team]:null,act=typeof pp[id]==="number"?pp[id]:0,p=P.pts[id]||0;return a+(st==="post"?act:st==="pre"?p:Math.max(act,p))},0)}
+ const liveWk=S.cur===LV.fw;return ids.reduce((a,id)=>{const team=PL&&PL[id]?PL[id].team:null,st=team&&liveWk?LV.gs[team]:null,act=typeof pp[id]==="number"?pp[id]:0,p=P.pts[id]||0;return a+(st==="post"?act:st==="pre"?p:Math.max(act,p))},0)}
 function matchups(){const w=S.cur,m=S.wk[w-1]||[],g={};m.forEach(x=>(g[x.matchup_id]??=[]).push(x));
  const sel=`<select id="wsel" aria-label="Week" style="margin-bottom:10px">${S.wk.map((_,i)=>`<option value="${i+1}" ${i+1==w?"selected":""}>Week ${i+1}${i+1==S.state.week&&String(S.L.season)===String(S.state.season)&&S.L.status!=="complete"?" (current)":""}</option>`).join("")}</select>`;
  const fin=S.played.includes(w),showP=!fin,key=S.L.league_id+":"+w,P=showP?PJ[key]:null;if(showP&&!P)loadProj(w);
