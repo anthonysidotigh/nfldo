@@ -863,7 +863,7 @@ async function loadATExtra(rows){const key="x"+rows.map(r=>r.y).join(",");if(AT[
   const[mw,tx]=await Promise.all([Promise.all(Array.from({length:reg},(_,i)=>get(`/league/${id}/matchups/${i+1}`).catch(()=>[]))),Promise.all(Array.from({length:18},(_,i)=>get(`/league/${id}/transactions/${i+1}`).catch(()=>[])))]);
   return{mw,tx:tx.flat().filter(x=>x&&x.status==="complete")}}));
  return AT[key]=out}
-function drawATHall(rows,ex,A){const el=$("#athf");if(!el)return;Promise.all([players().catch(()=>{}),attachValues(ledger)]).then(()=>{if(PL&&$("#athf")&&!el.dataset.pl){el.dataset.pl="1";draw()}});draw();function draw(){
+function drawATHall(rows,ex,A){const el=$("#athf");if(!el)return;let LG=[];const ATV={},tk=t=>t.y+"|"+t.ts+"|"+t.w+"|"+t.sides.map(z=>z.team).join();draw();Promise.all([players().catch(()=>{}),attachValues(LG)]).then(()=>{LG.forEach(t=>{ATV[tk(t)]={vm:t.vm,vd:t.vd,vx:t.vx}});if($("#athf")&&!el.dataset.pl){el.dataset.pl="1";draw()}});function draw(){
  const people=A.list.filter(p=>p.seasons>0),PM=Object.fromEntries(A.list.map(p=>[p.id,p])),games=[],hist={},luck={},trades={},adds={},seasonsPF=[],weekly=[],ledger=[];
  rows.forEach((se,si)=>{const ro={},um={};se.rosters.forEach(r=>ro[r.roster_id]=r);se.users.forEach(u=>um[u.user_id]=u);
   const tn=rid=>{const r=ro[rid],u=(r&&um[r.owner_id])||{};return(u.metadata&&u.metadata.team_name)||u.display_name||"Team"},own=rid=>ro[rid]&&ro[rid].owner_id;
@@ -914,6 +914,7 @@ function drawATHall(rows,ex,A){const el=$("#athf");if(!el)return;Promise.all([pl
  if(shy){const z=people.filter(p=>(trades[p.id]||0)===(trades[shy.id]||0)).length;X.push(hc("s","🚫","Trade-shy",(trades[shy.id]||0)+((trades[shy.id]||0)==1?" trade":" trades"),nmP(shy),"Do they even know the trade button exists?"+(z>1?` (${z-1} other manager${z>2?"s":""} tied.)`:"")))}
  const grid=a=>`<div class="fx" style="--cd:${cols(a.length,3)};--cm:2">${a.join("")}</div>`;
  el.innerHTML=`<h3 class="hh">🏆 The all-time glazing corner</h3>${grid(G)}<h3 class="hh">🚽 The all-time wall of shame</h3>${grid(X)}<p class="note">Built from every Sleeper season in the table above: finished regular-season weeks, trades and pickups. Hand-entered seasons (2024) count for the standings table and trophies, but not for week-by-week stats, trades or waivers. All in good fun.</p>`;
+  LG=ledger;ledger.forEach(t=>{const o=ATV[tk(t)];if(o)Object.assign(t,o)});
   const trEl=$("#attr");if(trEl){const nmp=id=>{const q=PL&&PL[id];return q?(q.first_name?q.first_name[0]+". ":"")+(q.last_name||q.full_name||id):"player "+id},
    QUIET=["Not a single trade. The trade button is gathering dust and so is everyone’s imagination.","Zero trades. The group chat was apparently just for memes.","Nobody traded all season. A league of hoarders.","No trades. Everyone thought they were already winning the trade.","Crickets. Not one manager could be bothered to send an offer."],
    seasons=rows.map(r=>r.y).sort().reverse();
